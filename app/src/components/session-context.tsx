@@ -17,7 +17,7 @@ import {
 } from "@/lib/session";
 import type { MeData, SessionData } from "@/lib/types";
 
-type SessionState = "booting" | "anon" | "authed";
+type SessionState = "booting" | "anon" | "expired" | "authed";
 
 interface SessionContextValue {
   state: SessionState;
@@ -26,7 +26,7 @@ interface SessionContextValue {
   login(data: SessionData): Promise<MeData | null>;
   reloadMe(): Promise<MeData | null>;
   logout(): Promise<void>;
-  /** Sessão morreu (refresh 401): limpa estado → guards levam a /login. */
+  /** Sessão morreu (refresh 401): limpa estado → guards levam ao login com aviso. */
   expire(): void;
 }
 
@@ -46,7 +46,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const expire = useCallback(() => {
     clearSession();
     setMe(null);
-    setState("anon");
+    setState("expired");
   }, []);
 
   const reloadMe = useCallback(async (): Promise<MeData | null> => {
@@ -76,8 +76,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Logout é idempotente; falha de rede não impede saída local.
     }
-    expire();
-  }, [expire]);
+    // Logout voluntário: volta ao login sem aviso de expiração.
+    clearSession();
+    setMe(null);
+    setState("anon");
+  }, []);
 
   // Bootstrap: sem token em memória (reload/F5) → tenta o cookie de refresh.
   useEffect(() => {
