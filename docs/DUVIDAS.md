@@ -108,9 +108,10 @@ a recarga do onboarding que falhava com 500 já foi coberta no E2E pós-fix.)
 ### 5. Como a SPA fala com a API em produção (cross-origin same-site)
 
 - O pedido pedia `NEXT_PUBLIC_API_URL` por ambiente. Adotado:
-  dev `https://api-dev.ecolchain.com`, prod `https://api.ecolchain.com`
+  dev `https://api-dev.ecolchain.com`, prod `https://api-prod.ecolchain.com`
   (inline no build; `""` local = same-origin). Os hostnames são o
-  **combinado** para o futuro deploy da `ecolchain-management-api`.
+  **combinado** para o futuro deploy da `ecolchain-management-api`
+  (prod ajustado de `api` para `api-prod` a pedido do dono, 2026-10-09).
 - O cookie `ecolchain_refresh` é `SameSite=Strict`: `manage(-dev)` → `api(-dev)`
   continua **same-site** (eTLD+1 `ecolchain.com`), então o refresh funciona —
   **desde que a API configure CORS credenciado** (`Allow-Origin` =

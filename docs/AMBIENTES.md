@@ -7,7 +7,7 @@ vem depois — os hostnames abaixo são o combinado/documentado para alinhar.
 | Ambiente | Hostname | API (`NEXT_PUBLIC_API_URL`) | Proteção |
 |---|---|---|---|
 | dev | `manage-dev.ecolchain.com` | `https://api-dev.ecolchain.com` | Basic Auth + `noindex` |
-| prod | `manage.ecolchain.com` | `https://api.ecolchain.com` | — |
+| prod | `manage.ecolchain.com` | `https://api-prod.ecolchain.com` | — |
 | local | `localhost` (`next dev`) | same-origin (rewrites → `:8080` ou `API_INTERNAL_URL`) | — |
 
 ## Como a API é escolhida
@@ -16,7 +16,7 @@ vem depois — os hostnames abaixo são o combinado/documentado para alinhar.
   — prefixo de todas as chamadas (`apiFetch` e `POST /auth/refresh`).
 - `NEXT_PUBLIC_API_URL` é inline **no build** pela esteira:
   - builds de dev (branches `feature/**` e `develop`): `https://api-dev.ecolchain.com`
-  - build de prod (branch `main`): `https://api.ecolchain.com`
+  - build de prod (branch `main`): `https://api-prod.ecolchain.com`
   - local: ausente → `""` (same-origin; `next dev` proxyfica para `API_INTERNAL_URL ?? :8080`)
 - Front e API ficam sob `ecolchain.com`, então as chamadas são **same-site**:
   o cookie `ecolchain_refresh` (`SameSite=Strict; Path=/auth`) segue sendo

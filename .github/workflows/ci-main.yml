@@ -55,7 +55,7 @@ jobs:
 
       - name: Run Build (static export -> app/out)
         env:
-          NEXT_PUBLIC_API_URL: https://api.ecolchain.com
+          NEXT_PUBLIC_API_URL: https://api-prod.ecolchain.com
         run: npm run build
 
       - name: Deploy to OCI Bucket (prod)
