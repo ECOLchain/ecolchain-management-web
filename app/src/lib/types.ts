@@ -85,7 +85,7 @@ export interface AttributeRules {
 }
 
 export type AttributeKind = "DATA" | "DOCUMENT";
-export type ReviewStatus = "PENDING" | "ACCEPTED" | "REJECTED";
+export type ReviewStatus = "PENDING" | "UPLOADED" | "ACCEPTED" | "REJECTED";
 
 export interface Revisao {
   status: ReviewStatus;

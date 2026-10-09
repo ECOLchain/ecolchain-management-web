@@ -12,26 +12,35 @@ const ALL: NextStep[] = [
 ];
 
 describe("roteamento por proximoPasso", () => {
-  it("mapeia todos os passos do contrato para uma rota", () => {
+  it("mapeia todos os passos do contrato para uma rota com locale", () => {
     for (const step of ALL) {
-      expect(routeForStep(step), step).toBeTruthy();
-      expect(routeForStep(step)).toMatch(/^\//);
+      expect(routeForStep(step, "pt-br"), step).toMatch(/^\/pt-br\//);
+      expect(routeForStep(step, "en"), step).toMatch(/^\/en\//);
     }
   });
 
-  it("rotas esperadas", () => {
-    expect(routeForStep("COMPANY_FORM")).toBe("/empresa");
-    expect(routeForStep("ONBOARDING")).toBe("/onboarding");
-    expect(routeForStep("AWAITING_REVIEW")).toBe("/revisao");
-    expect(routeForStep("HOME")).toBe("/painel");
-    expect(routeForStep("REJECTED")).toBe("/rejeitada");
-    expect(routeForStep("SUSPENDED")).toBe("/suspendida");
+  it("rotas esperadas no locale default", () => {
+    expect(routeForStep("COMPANY_FORM", "pt-br")).toBe("/pt-br/empresa");
+    expect(routeForStep("ONBOARDING", "pt-br")).toBe("/pt-br/onboarding");
+    expect(routeForStep("AWAITING_REVIEW", "pt-br")).toBe("/pt-br/revisao");
+    expect(routeForStep("HOME", "pt-br")).toBe("/pt-br/painel");
+    expect(routeForStep("REJECTED", "pt-br")).toBe("/pt-br/rejeitada");
+    expect(routeForStep("SUSPENDED", "pt-br")).toBe("/pt-br/suspendida");
   });
 
-  it("stepForRoute é o inverso de routeForStep", () => {
+  it("pós-verify: o passo do /me resolve a rota no locale ativo", () => {
+    // verify → login() → router.replace(routeForStep(me.proximoPasso, locale))
+    expect(routeForStep("COMPANY_FORM", "en")).toBe("/en/empresa");
+    expect(routeForStep("ONBOARDING", "en")).toBe("/en/onboarding");
+  });
+
+  it("stepForRoute é o inverso de routeForStep (com e sem prefixo)", () => {
     for (const step of ALL) {
-      expect(stepForRoute(routeForStep(step))).toBe(step);
+      expect(stepForRoute(routeForStep(step, "pt-br"))).toBe(step);
+      expect(stepForRoute(routeForStep(step, "en"))).toBe(step);
+      expect(stepForRoute(STEP_ROUTE[step])).toBe(step);
     }
+    expect(stepForRoute("/pt-br/login")).toBeNull();
     expect(stepForRoute("/login")).toBeNull();
   });
 

@@ -19,26 +19,27 @@ java.lang.IllegalArgumentException: Unexpected value 'UPLOADED'
   at MeController.lambda$getOnboarding$3 (MeController.java:123)
 ```
 
-Causa: o enum `Revisao.status` do contrato só tem `PENDING|ACCEPTED|REJECTED`, mas o
-controller mapeia o **estado do documento** (`UPLOADED`) para esse enum. Provável intenção:
-`UPLOADED` → `PENDING` (aguardando revisão). Enquanto não corrigido, a tela de onboarding
-exibe o erro genérico de 500 — conforme a regra "500 → mensagem genérica".
+Causa: o enum `Revisao.status` do contrato só tinha `PENDING|ACCEPTED|REJECTED`, mas o
+controller mapeia o **estado do documento** (`UPLOADED`) para esse enum.
+**Resolvido no backend** (`main` `488841f`, 2026-10-09): o enum do contrato passou a
+cobrir `UPLOADED` e `GET /me/onboarding` volta a responder 200 com doc enviado. O front
+também inclui `UPLOADED` no tipo `ReviewStatus`.
 
 ### 2. Segunda rotação do refresh token → `REFRESH_REUSED` (sessão morta)
 
 `POST /auth/refresh` rotaciona `familyId.secret`. Observado em dev: qualquer **segundo**
 refresh da mesma família responde 401 `REFRESH_REUSED` e revoga tudo — mesmo com o cookie
-rotacionado correto. Suspeita: `PanacheRefreshTokenStore.revokeFamily(familyId, …)` marca
-`revokedAt` em todos os tokens ativos da família **incluindo o recém-criado**, pois o filtro
-`revokedAt is null` o alcança. Impacto: um refresh espúrio (F5 duplo, StrictMode double-effect)
-derruba a sessão. O front mitiga com single-flight e refresh proativo apenas quando
-necessário, mas uma segunda rotação real sempre mata a sessão — precisa de fix no backend.
+rotacionado correto. Causa raiz confirmada: `revokeFamily` marcava `revokedAt` em todos os tokens da família
+**incluindo o recém-criado** (o filtro `revokedAt is null` o alcançava).
+**Resolvido no backend** (`main` `488841f`): rotações consecutivas verificadas — a rotação
+revoga só o token apresentado. O front mantém o single-flight (defesa contra refresh
+paralelo) e o fluxo de sessão expirada para `REFRESH_REUSED` residual/real.
 
-### 3. `SessionData.expiraEm`: documentado como epoch, devolvido como TTL
+### 3. `SessionData.expiraEm`: TTL em segundos (contrato alinhado)
 
-O OpenAPI diz "epoch em segundos"; a API devolve `900` (TTL). `setSession` normaliza os dois
-formatos (se > now → epoch; senão → now + TTL). Se o backend passar a mandar epoch, o front
-continua correto.
+O OpenAPI dizia "epoch em segundos"; a API devolvia `900` (TTL). **Resolvido** (`488841f`):
+a descrição do campo foi alinhada a TTL — implementação e contrato agora batem.
+`setSession` continua normalizando os dois formatos por tolerância.
 
 ### 4. Códigos de tipo de perfil em PT
 
@@ -78,10 +79,10 @@ Atributos DATA podem vir com `regras: null` (sem restrições) — o tipo no fro
   responsible_cpf") — mesmo formato que o parser do front espera.
 - 429 do `otp/request` exibe a mensagem amigável ("limite de códigos atingido"). ✅
 
-## Não verificado (bloqueio do backend)
+## Não verificado
 
-- Renderização do estado `UPLOADED`/download no browser — impossível enquanto o bug #1
-  quebrar `GET /me/onboarding`. Coberto por teste de unidade + verificação via curl
-  (doc persistido e `download-url` funcional).
 - Estados REJECTED/CHANGES_REQUESTED/SUSPENDED em runtime — precisam de ação admin;
   as telas existem e são dirigidas por `proximoPasso`.
+
+(Após o fix `488841f` do backend, `UPLOADED`/download voltaram a ser renderizáveis —
+a recarga do onboarding que falhava com 500 já foi coberta no E2E pós-fix.)
