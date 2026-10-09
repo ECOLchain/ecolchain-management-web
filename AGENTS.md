@@ -11,7 +11,8 @@ npm install        # Node 20+ (desenvolvido com Node 22)
 npm run dev        # http://localhost:3000 (proxy para a API em :8080)
 npm test           # vitest run
 npm run lint       # eslint (flat config, next/typescript + react-hooks)
-npm run build      # build de produção
+npm run build      # build de produção → export estático em app/out/ (deploy no bucket OCI)
+npm run typecheck  # tsc --noEmit
 ```
 
 Antes de dar qualquer tarefa por pronta: `npm test`, `npm run lint` e `npm run build` verdes.
@@ -20,9 +21,11 @@ Antes de dar qualquer tarefa por pronta: `npm test`, `npm run lint` e `npm run b
 
 1. Suba o backend (`ecolchain-management-api`): `.env` na raiz do clone (nunca commitar),
    `QUARKUS_MAILER_MOCK=true JAVA_HOME=~/jdk25 mvn quarkus:dev` → API em `http://localhost:8080`.
-2. `cd app && npm run dev`. O `next.config.ts` faz rewrite same-origin:
+2. `cd app && npm run dev`. O `next.config.ts` (fase dev) faz rewrite same-origin:
    `/auth/*`, `/public/*`, `/me/*`, `/.well-known/*` e `/dev-mailbox` → `API_INTERNAL_URL ?? http://localhost:8080`.
-   Same-origin é obrigatório: o cookie de refresh é `SameSite=Strict` com `Path=/auth`.
+   Same-origin é obrigatório em dev: o cookie de refresh é `SameSite=Strict` com `Path=/auth`.
+   Em produção não há rewrites — as chamadas vão para `NEXT_PUBLIC_API_URL` (ver `docs/AMBIENTES.md`;
+   `src/lib/api-base.ts` resolve a base, `api-dev.ecolchain.com`/`api.ecolchain.com` seguem same-site).
 3. Login: `POST /auth/otp/request` dispara e-mail; com o mailer mockado o código aparece em
    `GET http://localhost:8080/dev-mailbox?to=<email>` (últimos 6 dígitos do corpo).
 4. Fluxo: `/pt-br/login` → `/pt-br/empresa` → `/pt-br/onboarding` → `/pt-br/revisao`
@@ -82,11 +85,12 @@ app/
                       provider.tsx (I18nProvider/useCopy/useLocale)
   src/components/     login-form, company-form, onboarding-flow, document-card,
                       status-screen, gate, session-context, ui (Button/Card/Field/Alert...)
-  src/lib/            api.ts (apiFetch + endpoints + Accept-Language), session.ts
-                      (token/refresh), errors.ts (envelope→friendly), cnpj.ts,
-                      steps.ts, types.ts
+  src/lib/            api.ts (apiFetch + endpoints + Accept-Language), api-base.ts
+                      (API_BASE = NEXT_PUBLIC_API_URL), session.ts (token/refresh),
+                      errors.ts (envelope→friendly), cnpj.ts, steps.ts, types.ts
   tests/              vitest (api, session, cnpj, steps, errors, i18n)
 docs/DUVIDAS.md       decisões e divergências encontradas vs. o contrato
+docs/AMBIENTES.md     ambientes (dev/prod), NEXT_PUBLIC_API_URL e a esteira de deploy
 ```
 
 ## Regras de contribuição

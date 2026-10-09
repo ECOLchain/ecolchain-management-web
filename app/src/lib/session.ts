@@ -1,3 +1,4 @@
+import { API_BASE } from "./api-base";
 import type { ContaInfo, Envelope, SessionData } from "./types";
 
 /**
@@ -57,7 +58,7 @@ export function refreshSession(): Promise<RefreshResult> {
   if (refreshInflight) return refreshInflight;
   refreshInflight = (async (): Promise<RefreshResult> => {
     try {
-      const res = await fetch("/auth/refresh", {
+      const res = await fetch(`${API_BASE}/auth/refresh`, {
         method: "POST",
         credentials: "include",
         headers: { Accept: "application/json" },
