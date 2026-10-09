@@ -107,6 +107,14 @@ describe("redirects de locale (proxy)", () => {
     }
   });
 
+  it("paths de API nunca são redirecionados (bare ou com subpath)", () => {
+    for (const p of ["/me", "/me/onboarding", "/auth/refresh", "/public/profile-types"]) {
+      const r = redirectTo(p);
+      expect(r.status, p).toBe(200);
+      expect(r.location, p).toBeNull();
+    }
+  });
+
   it("primeiro segmento inválido cai no redirect do default", () => {
     // /es/login não é locale → vira /pt-br/es/login (a rota não existe → 404
     // do router, consistente com qualquer path desconhecido).
