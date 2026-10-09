@@ -23,7 +23,6 @@ env:
   DEPLOY_BUCKET: ecolchain-web-mgmt-dev
   PREVIEW_URL: https://manage-dev.ecolchain.com
   PROD_URL: https://manage.ecolchain.com
-  NEXT_PUBLIC_API_URL: https://api-dev.ecolchain.com
 
 jobs:
   build-deploy-pr:
@@ -58,6 +57,8 @@ jobs:
         run: npm test
 
       - name: Run Build (static export -> app/out)
+        env:
+          NEXT_PUBLIC_API_URL: https://api-dev.ecolchain.com
         run: npm run build
 
       - name: Deploy to OCI Bucket (dev)

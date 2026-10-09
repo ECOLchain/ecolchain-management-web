@@ -23,7 +23,6 @@ env:
   S3_ENDPOINT: https://grmykw8bmw9d.compat.objectstorage.sa-saopaulo-1.oraclecloud.com
   DEPLOY_BUCKET: ecolchain-web-mgmt-dev
   PREVIEW_URL: https://manage-dev.ecolchain.com
-  NEXT_PUBLIC_API_URL: https://api-dev.ecolchain.com
 
 jobs:
   build-deploy-pr:
@@ -58,6 +57,8 @@ jobs:
         run: npm test
 
       - name: Run Build (static export -> app/out)
+        env:
+          NEXT_PUBLIC_API_URL: https://api-dev.ecolchain.com
         run: npm run build
 
       - name: Deploy to OCI Bucket (dev)

@@ -20,7 +20,6 @@ env:
   AWS_RESPONSE_CHECKSUM_VALIDATION: WHEN_REQUIRED
   S3_ENDPOINT: https://grmykw8bmw9d.compat.objectstorage.sa-saopaulo-1.oraclecloud.com
   DEPLOY_BUCKET: ecolchain-web-mgmt-prod
-  NEXT_PUBLIC_API_URL: https://api.ecolchain.com
 
 jobs:
   deploy-production:
@@ -55,6 +54,8 @@ jobs:
         run: npm test
 
       - name: Run Build (static export -> app/out)
+        env:
+          NEXT_PUBLIC_API_URL: https://api.ecolchain.com
         run: npm run build
 
       - name: Deploy to OCI Bucket (prod)
