@@ -7,14 +7,17 @@ import { api } from "@/lib/api";
 import { friendlyMessage } from "@/lib/errors";
 import { routeForStep } from "@/lib/steps";
 import { useSession } from "./session-context";
+import { useCopy, useLocale } from "@/i18n/provider";
 import { Alert, Button, Card, Field } from "./ui";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const RESEND_SECONDS = 60;
 
-export function LoginForm() {
+export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean }) {
   const router = useRouter();
   const { state, me, login } = useSession();
+  const locale = useLocale();
+  const c = useCopy();
 
   const [email, setEmail] = useState("");
   const [fase, setFase] = useState<"email" | "codigo">("email");
@@ -26,12 +29,13 @@ export function LoginForm() {
 
   // Já autenticado (ex.: voltou ao /login logado) → segue o fluxo.
   useEffect(() => {
-    if (state === "authed" && me) router.replace(routeForStep(me.proximoPasso));
-  }, [state, me, router]);
+    if (state === "authed" && me)
+      router.replace(routeForStep(me.proximoPasso, locale));
+  }, [state, me, router, locale]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
-    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    const t = setTimeout(() => setCooldown((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [cooldown]);
 
@@ -40,7 +44,7 @@ export function LoginForm() {
     setErro(null);
     const mail = email.trim().toLowerCase();
     if (!EMAIL_RE.test(mail)) {
-      setErro("Informe um e-mail válido.");
+      setErro(c.login.invalidEmail);
       return;
     }
     setBusy(true);
@@ -50,7 +54,7 @@ export function LoginForm() {
       setCooldown(RESEND_SECONDS);
       setTimeout(() => codeRef.current?.focus(), 50);
     } catch (err) {
-      setErro(friendlyMessage(err));
+      setErro(friendlyMessage(err, c.errors));
     } finally {
       setBusy(false);
     }
@@ -64,7 +68,7 @@ export function LoginForm() {
       await api.requestOtp(email.trim().toLowerCase());
       setCooldown(RESEND_SECONDS);
     } catch (err) {
-      setErro(friendlyMessage(err));
+      setErro(friendlyMessage(err, c.errors));
     } finally {
       setBusy(false);
     }
@@ -73,19 +77,20 @@ export function LoginForm() {
   async function verificar(e: React.FormEvent) {
     e.preventDefault();
     setErro(null);
-    const c = codigo.trim();
-    if (!/^[0-9]{6}$/.test(c)) {
-      setErro("O código tem 6 dígitos numéricos.");
+    const code = codigo.trim();
+    if (!/^[0-9]{6}$/.test(code)) {
+      setErro(c.login.invalidCode);
       return;
     }
     setBusy(true);
     try {
-      const session = await api.verifyOtp(email.trim().toLowerCase(), c);
+      const session = await api.verifyOtp(email.trim().toLowerCase(), code);
       if (!session) throw new Error("empty");
+      // Entrada direta: o proximoPasso do /me decide a rota — sem tela extra.
       const m = await login(session);
-      if (m) router.replace(routeForStep(m.proximoPasso));
+      if (m) router.replace(routeForStep(m.proximoPasso, locale));
     } catch (err) {
-      setErro(friendlyMessage(err));
+      setErro(friendlyMessage(err, c.errors));
     } finally {
       setBusy(false);
     }
@@ -93,23 +98,26 @@ export function LoginForm() {
 
   return (
     <Card>
+      {sessionExpired ? (
+        <Alert tone="info" className="mb-5">
+          {c.login.sessionExpired}
+        </Alert>
+      ) : null}
       {fase === "email" ? (
         <form onSubmit={pedirCodigo} className="flex flex-col gap-5" noValidate>
           <div>
             <h2 className="text-lg font-semibold text-verde-floresta">
-              Entrar na sua conta
+              {c.login.cardTitle}
             </h2>
-            <p className="mt-1 text-sm text-verde-musgo">
-              Enviamos um código de 6 dígitos para o seu e-mail. Sem senha.
-            </p>
+            <p className="mt-1 text-sm text-verde-musgo">{c.login.cardSub}</p>
           </div>
           <Field
-            label="E-mail corporativo"
+            label={c.login.emailLabel}
             name="email"
             type="email"
             inputMode="email"
             autoComplete="email"
-            placeholder="voce@empresa.com.br"
+            placeholder={c.login.emailPlaceholder}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -117,7 +125,7 @@ export function LoginForm() {
           />
           {erro ? <Alert tone="error">{erro}</Alert> : null}
           <Button type="submit" loading={busy}>
-            Enviar código
+            {c.login.sendCode}
           </Button>
         </form>
       ) : (
@@ -126,16 +134,16 @@ export function LoginForm() {
             <MailCheck className="mt-1 h-6 w-6 shrink-0 text-verde-musgo" aria-hidden />
             <div>
               <h2 className="text-lg font-semibold text-verde-floresta">
-                Confira seu e-mail
+                {c.login.codeTitle}
               </h2>
               <p className="mt-1 text-sm text-verde-musgo">
-                Enviamos um código para <strong>{email}</strong>. Ele vale por
-                10 minutos.
+                {c.login.codeSentPre} <strong>{email}</strong>
+                {c.login.codeSentPost}
               </p>
             </div>
           </div>
           <Field
-            label="Código de verificação"
+            label={c.login.codeLabel}
             name="codigo"
             ref={codeRef}
             inputMode="numeric"
@@ -150,7 +158,7 @@ export function LoginForm() {
           />
           {erro ? <Alert tone="error">{erro}</Alert> : null}
           <Button type="submit" loading={busy}>
-            Entrar
+            {c.login.signIn}
           </Button>
           <div className="flex items-center justify-between text-sm">
             <button
@@ -162,7 +170,7 @@ export function LoginForm() {
               }}
               className="font-medium text-verde-musgo underline-offset-4 hover:underline"
             >
-              Usar outro e-mail
+              {c.login.useOtherEmail}
             </button>
             <button
               type="button"
@@ -170,7 +178,7 @@ export function LoginForm() {
               disabled={cooldown > 0 || busy}
               className="font-medium text-verde-musgo underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {cooldown > 0 ? `Reenviar em ${cooldown}s` : "Reenviar código"}
+              {cooldown > 0 ? c.login.resendIn(cooldown) : c.login.resendCode}
             </button>
           </div>
         </form>

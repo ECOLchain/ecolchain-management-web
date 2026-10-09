@@ -12,6 +12,7 @@ import {
 import { api, UnauthorizedError } from "@/lib/api";
 import { ApiError, friendlyMessage } from "@/lib/errors";
 import { useSession } from "./session-context";
+import { useCopy } from "@/i18n/provider";
 import { DocumentCard, docState } from "./document-card";
 import {
   Alert,
@@ -30,6 +31,7 @@ import type {
 
 export function OnboardingFlow() {
   const { expire, reloadMe } = useSession();
+  const c = useCopy();
   const [data, setData] = useState<OnboardingData | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [passoAtual, setPassoAtual] = useState(0);
@@ -61,10 +63,10 @@ export function OnboardingFlow() {
       return d;
     } catch (err) {
       if (err instanceof UnauthorizedError) expire();
-      else setErro(friendlyMessage(err));
+      else setErro(friendlyMessage(err, c.errors));
       return null;
     }
-  }, [expire]);
+  }, [expire, c]);
 
   // sujos espelhado em ref (atualizado só nos handlers) para o merge de
   // carregar() não depender de estado stale dentro do setValores.
@@ -115,18 +117,18 @@ export function OnboardingFlow() {
       if (a.tipo !== "DATA") continue;
       const v = (valores[a.codigo] ?? "").trim();
       if (a.obrigatorio && !v) {
-        erros[a.codigo] = "Campo obrigatório.";
+        erros[a.codigo] = c.common.required;
         continue;
       }
       if (!v) continue;
       if (a.regras?.maxLength && v.length > a.regras.maxLength) {
-        erros[a.codigo] = `Máximo de ${a.regras.maxLength} caracteres.`;
+        erros[a.codigo] = c.common.maxChars(a.regras.maxLength);
         continue;
       }
       if (a.regras?.regex) {
         try {
           if (!new RegExp(`^(?:${a.regras.regex})$`).test(v))
-            erros[a.codigo] = "Formato inválido.";
+            erros[a.codigo] = c.common.invalidFormat;
         } catch {
           // Regex Java sem equivalente JS: valida só no servidor.
         }
@@ -168,7 +170,7 @@ export function OnboardingFlow() {
         }
         if (Object.keys(porCampo).length) setErrosCampo((prev) => ({ ...prev, ...porCampo }));
       }
-      setErro(friendlyMessage(err));
+      setErro(friendlyMessage(err, c.errors));
     } finally {
       setSalvando(false);
     }
@@ -215,11 +217,9 @@ export function OnboardingFlow() {
           : -1;
         setPassoAtual(idx >= 0 ? idx : primeiroIncompleto());
         topRef.current?.scrollIntoView({ behavior: "smooth" });
-        setErro(
-          "Ainda há itens obrigatórios pendentes — eles estão marcados abaixo.",
-        );
+        setErro(c.onboarding.submitMissing);
       } else {
-        setErro(friendlyMessage(err));
+        setErro(friendlyMessage(err, c.errors));
       }
     } finally {
       setSubmetendo(false);
@@ -230,7 +230,7 @@ export function OnboardingFlow() {
     return erro ? (
       <Alert tone="error">{erro}</Alert>
     ) : (
-      <FullPageLoader label="Carregando seu onboarding..." />
+      <FullPageLoader label={c.onboarding.loadingOnboarding} />
     );
   }
 
@@ -247,22 +247,23 @@ export function OnboardingFlow() {
   return (
     <div ref={topRef} className="flex flex-col gap-6">
       {data.status === "CHANGES_REQUESTED" && (
-        <Alert tone="error" title="O revisor pediu ajustes">
-          Corrija os itens marcados como rejeitados e reenvie seu cadastro.
+        <Alert tone="error" title={c.onboarding.changesTitle}>
+          {c.onboarding.changesBody}
         </Alert>
       )}
       {data.status === "PENDING_UPDATE" && (
-        <Alert tone="info" title="Novos requisitos">
-          A rede adicionou exigências ao seu perfil. Preencha os novos itens e
-          reenvie.
+        <Alert tone="info" title={c.onboarding.updateTitle}>
+          {c.onboarding.updateBody}
         </Alert>
       )}
 
       <Card className="p-5">
         <div className="flex items-center justify-between text-sm">
           <p className="font-semibold text-verde-floresta">
-            {data.progresso.preenchidosObrigatorios} de{" "}
-            {data.progresso.totalObrigatorios} itens obrigatórios
+            {c.onboarding.progress(
+              data.progresso.preenchidosObrigatorios,
+              data.progresso.totalObrigatorios,
+            )}
           </p>
           <p className="font-mono text-xs text-verde-musgo">{pct}%</p>
         </div>
@@ -281,7 +282,7 @@ export function OnboardingFlow() {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-[240px_1fr]">
-        <nav aria-label="Passos do onboarding" className="md:sticky md:top-6 md:self-start">
+        <nav aria-label={c.onboarding.stepsAria} className="md:sticky md:top-6 md:self-start">
           <ol className="flex gap-2 overflow-x-auto md:flex-col">
             {passos.map((p, i) => {
               const completoOk = passoCompleto(p);
@@ -355,7 +356,7 @@ export function OnboardingFlow() {
                   disabled={passoAtual === 0 || salvando}
                   onClick={() => setPassoAtual((i) => Math.max(0, i - 1))}
                 >
-                  <ChevronLeft className="h-4 w-4" aria-hidden /> Anterior
+                  <ChevronLeft className="h-4 w-4" aria-hidden /> {c.common.previous}
                 </Button>
                 <div className="flex gap-2">
                   <Button
@@ -365,7 +366,7 @@ export function OnboardingFlow() {
                     disabled={sujos.size === 0}
                     onClick={() => void salvarPasso(passo, false)}
                   >
-                    Salvar
+                    {c.common.save}
                   </Button>
                   {passoAtual < passos.length - 1 ? (
                     <Button
@@ -373,7 +374,7 @@ export function OnboardingFlow() {
                       loading={salvando}
                       onClick={() => void salvarPasso(passo, true)}
                     >
-                      Salvar e continuar{" "}
+                      {c.common.saveContinue}{" "}
                       <ChevronRight className="h-4 w-4" aria-hidden />
                     </Button>
                   ) : (
@@ -382,7 +383,7 @@ export function OnboardingFlow() {
                       loading={submetendo}
                       onClick={() => void submeter()}
                     >
-                      <Send className="h-4 w-4" aria-hidden /> Enviar para revisão
+                      <Send className="h-4 w-4" aria-hidden /> {c.common.submitReview}
                     </Button>
                   )}
                 </div>
@@ -395,8 +396,7 @@ export function OnboardingFlow() {
               <div className="flex items-start gap-3">
                 <CircleAlert className="mt-0.5 h-5 w-5 shrink-0 text-verde-musgo" aria-hidden />
                 <p className="text-sm text-verde-tinta">
-                  Revise suas respostas. Ao enviar, o cadastro entra na fila de
-                  revisão manual da ECOLchain.
+                  {c.onboarding.submitNote}
                 </p>
               </div>
               <Button
@@ -404,7 +404,7 @@ export function OnboardingFlow() {
                 loading={submetendo}
                 onClick={() => void submeter()}
               >
-                <Send className="h-4 w-4" aria-hidden /> Enviar para revisão
+                <Send className="h-4 w-4" aria-hidden /> {c.common.submitReview}
               </Button>
             </Card>
           )}
@@ -429,8 +429,9 @@ function DataField({
   pendente: boolean;
   onChange: (v: string) => void;
 }) {
+  const c = useCopy();
   const rejeitado = attr.revisao?.status === "REJECTED";
-  const erroMsg = erro ?? (pendente ? "Item obrigatório pendente." : undefined);
+  const erroMsg = erro ?? (pendente ? c.onboarding.pendingItem : undefined);
   const input = attr.regras?.input ?? "text";
 
   const wrap = (children: React.ReactNode) => (
@@ -442,7 +443,7 @@ function DataField({
       {children}
       {rejeitado && attr.revisao?.nota ? (
         <p className="mt-1 rounded bg-erro-fundo p-2 text-xs text-erro-terra">
-          Nota do revisor: {attr.revisao.nota}
+          {c.common.reviewerNote}: {attr.revisao.nota}
         </p>
       ) : null}
     </div>
@@ -450,7 +451,7 @@ function DataField({
 
   const hint =
     attr.ajuda ??
-    (attr.regras?.maxLength ? `Máximo ${attr.regras.maxLength} caracteres.` : undefined);
+    (attr.regras?.maxLength ? c.common.maxChars(attr.regras.maxLength) : undefined);
 
   if (input === "textarea") {
     return wrap(
@@ -460,7 +461,7 @@ function DataField({
         value={valor}
         onChange={(e) => onChange(e.target.value)}
         hint={hint}
-        error={erroMsg ?? (rejeitado ? "Rejeitado na revisão." : null)}
+        error={erroMsg ?? (rejeitado ? c.onboarding.rejectedNote : null)}
         required={attr.obrigatorio}
         maxLength={attr.regras?.maxLength ?? undefined}
       />,
@@ -484,7 +485,7 @@ function DataField({
       value={valor}
       onChange={(e) => onChange(e.target.value)}
       hint={hint}
-      error={erroMsg ?? (rejeitado ? "Rejeitado na revisão." : null)}
+      error={erroMsg ?? (rejeitado ? c.onboarding.rejectedNote : null)}
       required={attr.obrigatorio}
       maxLength={attr.regras?.maxLength ?? undefined}
     />,

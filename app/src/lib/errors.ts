@@ -38,34 +38,19 @@ export class NetworkError extends Error {
   }
 }
 
+export interface ErrorMessages {
+  friendly: Record<string, string>;
+  generic: string;
+}
+
 /**
- * Mensagem amigável por código de erro do contrato.
- * Fallback = o `detail` do servidor (já vem em pt-BR) ou texto genérico.
+ * Traduz um erro para a mensagem a exibir na UI (sem expor detalhes técnicos).
+ * `msgs` = `copy.errors` do locale ativo; o fallback é o `detail` do servidor
+ * (que a própria API localiza via Accept-Language) ou o texto genérico.
  */
-const FRIENDLY: Record<string, string> = {
-  OTP_INVALID: "Código inválido ou expirado. Confira o e-mail e tente novamente.",
-  TOO_MANY_REQUESTS: "Muitas tentativas. Aguarde alguns instantes e tente de novo.",
-  AUTH_REQUIRED: "Sua sessão expirou. Entre novamente.",
-  CNPJ_IN_USE: "Este CNPJ já está cadastrado. Fale com a Ecolchain.",
-  CNPJ_INVALID: "CNPJ inválido. Confira os dígitos e tente novamente.",
-  PROFILE_TYPE_INVALID: "Tipo de perfil inválido. Recarregue a página.",
-  COMPANY_LOCKED: "O cadastro não pode ser alterado no estado atual.",
-  ATTRIBUTE_VALUE_INVALID: "Valor inválido para o campo.",
-  ATTRIBUTE_NOT_IN_FLOW: "Campo fora do fluxo desta empresa.",
-  SUBMIT_INCOMPLETE: "Ainda há itens obrigatórios pendentes.",
-  DOCUMENT_INVALID: "Arquivo inválido. Verifique o formato e o tamanho.",
-  DOCUMENT_NOT_CONFIRMED: "O envio do documento não foi confirmado.",
-  DOCUMENT_UPLOAD_FAILED: "Falha no envio do arquivo. Tente novamente.",
-  REFRESH_REUSED: "Sua sessão foi encerrada por segurança. Entre novamente.",
-};
-
-export const GENERIC_ERROR =
-  "Não foi possível concluir agora. Tente novamente em instantes.";
-
-/** Traduz um erro para a mensagem a exibir na UI (sem expor detalhes técnicos). */
-export function friendlyMessage(err: unknown): string {
+export function friendlyMessage(err: unknown, msgs: ErrorMessages): string {
   if (err instanceof ApiError) {
-    return FRIENDLY[err.code] ?? err.detail ?? GENERIC_ERROR;
+    return msgs.friendly[err.code] ?? err.detail ?? msgs.generic;
   }
-  return GENERIC_ERROR;
+  return msgs.generic;
 }

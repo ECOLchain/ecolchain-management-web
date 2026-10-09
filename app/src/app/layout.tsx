@@ -1,11 +1,13 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { SessionProvider } from "@/components/session-context";
+import { getCopy, DEFAULT_LOCALE } from "@/i18n";
+
+const c = getCopy(DEFAULT_LOCALE);
 
 export const metadata: Metadata = {
-  title: "ECOLchain · Portal da empresa",
-  description:
-    "Cadastro e onboarding de empresas na rede ECOLchain — rastreabilidade de resíduos via blockchain.",
+  title: c.meta.title,
+  description: c.meta.description,
   icons: { icon: "/favicon.svg" },
 };
 

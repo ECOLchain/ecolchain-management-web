@@ -20,6 +20,7 @@ import {
   formatBytes,
 } from "@/lib/format";
 import { useSession } from "./session-context";
+import { useCopy } from "@/i18n/provider";
 import { Button, cn } from "./ui";
 import type { OnboardingAttribute } from "@/lib/types";
 
@@ -36,13 +37,6 @@ export function docState(attr: OnboardingAttribute): DocUiState {
   return "UPLOADED";
 }
 
-const STATE_LABEL: Record<DocUiState, string> = {
-  PENDING_UPLOAD: "Pendente de envio",
-  UPLOADED: "Enviado",
-  REJECTED: "Rejeitado na revisão",
-  ACCEPTED: "Aceito",
-};
-
 export function DocumentCard({
   attr,
   onChanged,
@@ -52,6 +46,13 @@ export function DocumentCard({
   onChanged: () => void;
 }) {
   const { expire } = useSession();
+  const c = useCopy();
+  const stateLabel: Record<DocUiState, string> = {
+    PENDING_UPLOAD: c.docs.pending,
+    UPLOADED: c.docs.uploaded,
+    REJECTED: c.docs.rejected,
+    ACCEPTED: c.docs.accepted,
+  };
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<"idle" | "presign" | "sending" | "confirming">(
     "idle",
@@ -73,10 +74,9 @@ export function DocumentCard({
   function validar(file: File): string | null {
     const ext = fileExtension(file.name);
     if (!ext || !extensoes.includes(ext))
-      return `Formato não aceito. Permitidos: ${extensoes.join(", ")}.`;
-    if (file.size > maxBytes)
-      return `Arquivo maior que o limite de ${formatBytes(maxBytes)}.`;
-    if (file.size === 0) return "O arquivo está vazio.";
+      return c.docs.badFormat(extensoes.join(", "));
+    if (file.size > maxBytes) return c.docs.tooBig(formatBytes(maxBytes));
+    if (file.size === 0) return c.docs.empty;
     return null;
   }
 
@@ -107,7 +107,7 @@ export function DocumentCard({
         expire();
         return;
       }
-      setErro(friendlyMessage(err));
+      setErro(friendlyMessage(err, c.errors));
     } finally {
       setBusy("idle");
       if (inputRef.current) inputRef.current.value = "";
@@ -124,17 +124,17 @@ export function DocumentCard({
         expire();
         return;
       }
-      setErro(friendlyMessage(err));
+      setErro(friendlyMessage(err, c.errors));
     }
   }
 
   const busyLabel =
     busy === "presign"
-      ? "Preparando envio..."
+      ? c.docs.preparing
       : busy === "sending"
-        ? "Enviando arquivo..."
+        ? c.docs.sending
         : busy === "confirming"
-          ? "Confirmando..."
+          ? c.docs.confirming
           : null;
 
   return (
@@ -167,11 +167,11 @@ export function DocumentCard({
                 state === "REJECTED" ? "text-erro-terra" : "text-verde-musgo",
               )}
             >
-              {STATE_LABEL[state]}
+              {stateLabel[state]}
             </p>
             {state === "REJECTED" && attr.revisao?.nota ? (
               <p className="mt-1 rounded bg-white/70 p-2 text-xs text-erro-terra">
-                Nota do revisor: {attr.revisao.nota}
+                {c.common.reviewerNote}: {attr.revisao.nota}
               </p>
             ) : null}
           </div>
@@ -198,11 +198,11 @@ export function DocumentCard({
               >
                 {state === "PENDING_UPLOAD" ? (
                   <>
-                    <Upload className="h-3.5 w-3.5" aria-hidden /> Enviar arquivo
+                    <Upload className="h-3.5 w-3.5" aria-hidden /> {c.docs.send}
                   </>
                 ) : (
                   <>
-                    <FileUp className="h-3.5 w-3.5" aria-hidden /> Substituir
+                    <FileUp className="h-3.5 w-3.5" aria-hidden /> {c.docs.replace}
                   </>
                 )}
               </Button>
@@ -214,7 +214,7 @@ export function DocumentCard({
               onClick={baixar}
               className="inline-flex items-center gap-1 text-xs font-medium text-verde-musgo underline-offset-4 hover:underline"
             >
-              <Download className="h-3.5 w-3.5" aria-hidden /> Baixar
+              <Download className="h-3.5 w-3.5" aria-hidden /> {c.docs.download}
             </button>
           )}
         </div>
@@ -231,7 +231,7 @@ export function DocumentCard({
         </p>
       ) : null}
       <p className="mt-2 text-[11px] text-verde-musgo/70">
-        Formatos: {extensoes.join(", ")} · até {formatBytes(maxBytes)}
+        {c.docs.formats(extensoes.join(", "), formatBytes(maxBytes))}
       </p>
     </div>
   );

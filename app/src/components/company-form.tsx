@@ -6,6 +6,7 @@ import { api, UnauthorizedError } from "@/lib/api";
 import { ApiError, friendlyMessage } from "@/lib/errors";
 import { isValidCnpj, maskCnpj, normalizeCnpj } from "@/lib/cnpj";
 import { useSession } from "./session-context";
+import { useCopy } from "@/i18n/provider";
 import { Alert, Button, Card, Field, Spinner } from "./ui";
 import type { ProfileTypeSummary } from "@/lib/types";
 
@@ -13,6 +14,7 @@ const TERMS_VERSION = "v1-placeholder"; // app.auth.terms-version do backend
 
 export function CompanyForm() {
   const { me, reloadMe, expire } = useSession();
+  const c = useCopy();
 
   const [tipos, setTipos] = useState<ProfileTypeSummary[] | null>(null);
   // Edição (empresa já existe): valores iniciais vêm de `me.empresa`.
@@ -38,12 +40,13 @@ export function CompanyForm() {
         if (alive) setTipos(t);
       })
       .catch(() => {
-        if (alive) setErroGeral("Não foi possível carregar os tipos de perfil.");
+        if (alive) setErroGeral(c.empresa.tiposLoadError);
       })
       .finally(() => alive && setLoadingTipos(false));
     return () => {
       alive = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- o copy muda só com o locale (remount da página)
   }, []);
 
   function toggleTipo(codigo: string) {
@@ -56,15 +59,11 @@ export function CompanyForm() {
 
   function validar(): boolean {
     const erros: Record<string, string> = {};
-    if (!isValidCnpj(cnpj)) erros.cnpj = "CNPJ inválido. Confira os dígitos.";
-    if (!razaoSocial.trim()) erros.razaoSocial = "Informe a razão social.";
-    if (!nomeCompleto.trim())
-      erros.nomeCompleto = "Informe seu nome completo.";
-    if (selecionados.length === 0)
-      erros.tiposPerfil = "Selecione ao menos um tipo de perfil.";
-    if (!declaracao)
-      erros.declaracao =
-        "É preciso declarar que você é dono(a) ou representante legal.";
+    if (!isValidCnpj(cnpj)) erros.cnpj = c.empresa.errCnpj;
+    if (!razaoSocial.trim()) erros.razaoSocial = c.empresa.errRazao;
+    if (!nomeCompleto.trim()) erros.nomeCompleto = c.empresa.errNome;
+    if (selecionados.length === 0) erros.tiposPerfil = c.empresa.errTipos;
+    if (!declaracao) erros.declaracao = c.empresa.errDeclaracao;
     setErrosCampo(erros);
     return Object.keys(erros).length === 0;
   }
@@ -93,9 +92,9 @@ export function CompanyForm() {
           if (p.campo) porCampo[p.campo] = p.detail;
         }
         if (Object.keys(porCampo).length > 0) setErrosCampo(porCampo);
-        setErroGeral(friendlyMessage(err));
+        setErroGeral(friendlyMessage(err, c.errors));
       } else {
-        setErroGeral(friendlyMessage(err));
+        setErroGeral(friendlyMessage(err, c.errors));
       }
     } finally {
       setBusy(false);
@@ -109,41 +108,41 @@ export function CompanyForm() {
           <Building2 className="mt-1 h-6 w-6 shrink-0 text-verde-musgo" aria-hidden />
           <div>
             <h2 className="text-lg font-semibold text-verde-floresta">
-              Dados da empresa
+              {c.empresa.sectionTitle}
             </h2>
             <p className="mt-1 text-sm text-verde-musgo">
-              Estas informações identificam sua empresa na rede ECOLchain.
+              {c.empresa.sectionSub}
             </p>
           </div>
         </div>
 
         <Field
-          label="CNPJ"
+          label={c.empresa.cnpjLabel}
           name="cnpj"
           inputMode="text"
-          placeholder="00.000.000/0000-00"
+          placeholder={c.empresa.cnpjPlaceholder}
           value={cnpj}
           onChange={(e) => setCnpj(maskCnpj(e.target.value))}
           error={errosCampo.cnpj}
-          hint="Aceitamos o novo formato alfanumérico da Receita."
+          hint={c.empresa.cnpjHint}
           required
           autoFocus
           maxLength={18}
         />
         <Field
-          label="Razão social"
+          label={c.empresa.razaoLabel}
           name="razaoSocial"
-          placeholder="Empresa Exemplo Ltda."
+          placeholder={c.empresa.razaoPlaceholder}
           value={razaoSocial}
           onChange={(e) => setRazaoSocial(e.target.value)}
           error={errosCampo.razaoSocial}
           required
         />
         <Field
-          label="Seu nome completo"
+          label={c.empresa.nomeLabel}
           name="nomeCompleto"
           autoComplete="name"
-          placeholder="Nome do responsável legal"
+          placeholder={c.empresa.nomePlaceholder}
           value={nomeCompleto}
           onChange={(e) => setNomeCompleto(e.target.value)}
           error={errosCampo.nomeCompleto}
@@ -152,15 +151,12 @@ export function CompanyForm() {
 
         <fieldset className="flex flex-col gap-2">
           <legend className="font-mono text-xs font-medium uppercase tracking-[0.14em] text-verde-musgo">
-            Tipos de perfil <span className="text-erro-terra">*</span>
+            {c.empresa.tiposLabel} <span className="text-erro-terra">*</span>
           </legend>
-          <p className="text-xs text-verde-musgo/80">
-            Marque todos que se aplicam — o onboarding combina os requisitos de
-            cada um.
-          </p>
+          <p className="text-xs text-verde-musgo/80">{c.empresa.tiposHint}</p>
           {loadingTipos ? (
             <div className="flex items-center gap-2 py-2 text-sm text-verde-musgo">
-              <Spinner className="h-4 w-4" /> Carregando tipos...
+              <Spinner className="h-4 w-4" /> {c.empresa.loadingTipos}
             </div>
           ) : (
             <div className="mt-1 grid gap-2 sm:grid-cols-2">
@@ -209,12 +205,9 @@ export function CompanyForm() {
               onChange={(e) => setDeclaracao(e.target.checked)}
             />
             <span className="text-sm text-verde-floresta">
-              Declaro que sou dono(a) ou representante legal desta empresa e
-              aceito os{" "}
-              <span className="font-semibold">
-                Termos de Uso ({TERMS_VERSION})
-              </span>
-              .
+              {c.empresa.declaracaoPre}{" "}
+              <span className="font-semibold">{c.empresa.termos(TERMS_VERSION)}</span>
+              {c.empresa.declaracaoPost}
             </span>
           </label>
           {errosCampo.declaracao ? (
@@ -226,7 +219,7 @@ export function CompanyForm() {
 
         {erroGeral ? <Alert tone="error">{erroGeral}</Alert> : null}
         <Button type="submit" loading={busy}>
-          Salvar e continuar
+          {c.common.saveContinue}
         </Button>
       </form>
     </Card>

@@ -2,15 +2,19 @@ import { CompanyForm } from "@/components/company-form";
 import { RequireStep } from "@/components/gate";
 import { AuthedHeader } from "@/components/status-screen";
 import { PageShell } from "@/components/ui";
+import { DEFAULT_LOCALE, getCopy, isLocale } from "@/i18n";
 
-export default function EmpresaPage() {
+export default async function EmpresaPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const c = getCopy(isLocale(locale) ? locale : DEFAULT_LOCALE);
   return (
     <RequireStep allow={["COMPANY_FORM"]}>
       <AuthedHeader />
-      <PageShell
-        title="Cadastro da empresa"
-        subtitle="Conte sobre a empresa que vai participar da rede."
-      >
+      <PageShell title={c.empresa.title} subtitle={c.empresa.sub}>
         <CompanyForm />
       </PageShell>
     </RequireStep>

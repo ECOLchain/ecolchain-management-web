@@ -1,0 +1,158 @@
+/**
+ * Conteúdo pt-BR — fonte da verdade do copy. Toda string visível na UI vem
+ * daqui; `en.ts` espelha exatamente a mesma estrutura (paridade coberta por
+ * teste). Nunca hardcode texto em componentes.
+ */
+export const copy = {
+  meta: {
+    title: "ECOLchain · Portal da empresa",
+    description:
+      "Cadastro e onboarding de empresas na rede ECOLchain — rastreabilidade de resíduos via blockchain.",
+  },
+  common: {
+    loading: "Carregando",
+    loadingEllipsis: "Carregando...",
+    loadingSession: "Carregando sua sessão...",
+    redirecting: "Redirecionando...",
+    logout: "Sair",
+    previous: "Anterior",
+    save: "Salvar",
+    saveContinue: "Salvar e continuar",
+    submitReview: "Enviar para revisão",
+    reviewerNote: "Nota do revisor",
+    required: "Campo obrigatório.",
+    invalidFormat: "Formato inválido.",
+    maxChars: (n: number) => `Máximo ${n} caracteres.`,
+  },
+  login: {
+    portalTag: "Portal da empresa",
+    welcome: "Bem-vinda à rede ECOLchain",
+    tagline: "Rastreabilidade e auditoria de resíduos sólidos via blockchain.",
+    cardTitle: "Entrar na sua conta",
+    cardSub: "Enviamos um código de 6 dígitos para o seu e-mail. Sem senha.",
+    emailLabel: "E-mail corporativo",
+    emailPlaceholder: "voce@empresa.com.br",
+    sendCode: "Enviar código",
+    codeTitle: "Confira seu e-mail",
+    codeSentPre: "Enviamos um código para",
+    codeSentPost: ". Ele vale por 10 minutos.",
+    codeLabel: "Código de verificação",
+    signIn: "Entrar",
+    useOtherEmail: "Usar outro e-mail",
+    resendCode: "Reenviar código",
+    resendIn: (s: number) => `Reenviar em ${s}s`,
+    invalidEmail: "Informe um e-mail válido.",
+    invalidCode: "O código tem 6 dígitos numéricos.",
+    sessionExpired: "Sua sessão expirou. Entre novamente para continuar.",
+  },
+  empresa: {
+    title: "Cadastro da empresa",
+    sub: "Conte sobre a empresa que vai participar da rede.",
+    sectionTitle: "Dados da empresa",
+    sectionSub: "Estas informações identificam sua empresa na rede ECOLchain.",
+    cnpjLabel: "CNPJ",
+    cnpjPlaceholder: "00.000.000/0000-00",
+    cnpjHint: "Aceitamos o novo formato alfanumérico da Receita.",
+    razaoLabel: "Razão social",
+    razaoPlaceholder: "Empresa Exemplo Ltda.",
+    nomeLabel: "Seu nome completo",
+    nomePlaceholder: "Nome do responsável legal",
+    tiposLabel: "Tipos de perfil",
+    tiposHint:
+      "Marque todos que se aplicam — o onboarding combina os requisitos de cada um.",
+    loadingTipos: "Carregando tipos...",
+    tiposLoadError: "Não foi possível carregar os tipos de perfil.",
+    declaracaoPre:
+      "Declaro que sou dono(a) ou representante legal desta empresa e aceito os",
+    declaracaoPost: ".",
+    termos: (versao: string) => `Termos de Uso (${versao})`,
+    errCnpj: "CNPJ inválido. Confira os dígitos.",
+    errRazao: "Informe a razão social.",
+    errNome: "Informe seu nome completo.",
+    errTipos: "Selecione ao menos um tipo de perfil.",
+    errDeclaracao:
+      "É preciso declarar que você é dono(a) ou representante legal.",
+  },
+  onboarding: {
+    title: "Onboarding",
+    sub: "Complete os requisitos do seu perfil para entrar na rede.",
+    loadingOnboarding: "Carregando seu onboarding...",
+    progress: (done: number, total: number) =>
+      `${done} de ${total} itens obrigatórios`,
+    stepsAria: "Passos do onboarding",
+    changesTitle: "O revisor pediu ajustes",
+    changesBody:
+      "Corrija os itens marcados como rejeitados e reenvie seu cadastro.",
+    updateTitle: "Novos requisitos",
+    updateBody:
+      "A rede adicionou exigências ao seu perfil. Preencha os novos itens e reenvie.",
+    submitNote:
+      "Revise suas respostas. Ao enviar, o cadastro entra na fila de revisão manual da ECOLchain.",
+    pendingItem: "Item obrigatório pendente.",
+    submitMissing:
+      "Ainda há itens obrigatórios pendentes — eles estão marcados abaixo.",
+    rejectedNote: "Rejeitado na revisão.",
+  },
+  docs: {
+    pending: "Pendente de envio",
+    uploaded: "Enviado",
+    rejected: "Rejeitado na revisão",
+    accepted: "Aceito",
+    send: "Enviar arquivo",
+    replace: "Substituir",
+    download: "Baixar",
+    preparing: "Preparando envio...",
+    sending: "Enviando arquivo...",
+    confirming: "Confirmando...",
+    badFormat: (ext: string) =>
+      `Formato não aceito. Permitidos: ${ext}.`,
+    tooBig: (limit: string) => `Arquivo maior que o limite de ${limit}.`,
+    empty: "O arquivo está vazio.",
+    formats: (ext: string, limit: string) =>
+      `Formatos: ${ext} · até ${limit}`,
+  },
+  status: {
+    revisaoTitle: "Cadastro em revisão",
+    revisaoBody:
+      "Recebemos todos os seus dados e documentos. Nossa equipe está analisando o cadastro e você será avisada por e-mail quando a revisão terminar.",
+    revisaoBody2:
+      "Não é preciso fazer mais nada por aqui — você pode sair e voltar quando quiser para acompanhar o status.",
+    rejeitadaTitle: "Cadastro não aprovado",
+    rejeitadaBody:
+      "Após a revisão, o cadastro desta empresa não foi aprovado para participar da rede ECOLchain neste momento.",
+    rejeitadaBody2:
+      "Se você acredita que houve um engano, fale com a equipe ECOLchain pelo e-mail",
+    suspendidaTitle: "Conta suspensa",
+    suspendidaBody:
+      "A participação desta empresa na rede ECOLchain está suspensa.",
+    suspendidaBody2:
+      "Para entender o motivo ou pedir a reativação, fale com a equipe ECOLchain pelo e-mail",
+    painelTitle: "Bem-vinda à ECOLchain",
+    painelBody:
+      "Sua empresa foi aprovada e já faz parte da rede. Esta é a tela inicial da área logada — as funcionalidades do produto entram aqui nas próximas entregas.",
+    razaoSocial: "Razão social",
+    cnpj: "CNPJ",
+    perfis: "Perfis",
+  },
+  errors: {
+    generic: "Não foi possível concluir agora. Tente novamente em instantes.",
+    friendly: {
+      OTP_INVALID: "Código inválido ou expirado. Confira o e-mail e tente novamente.",
+      TOO_MANY_REQUESTS: "Muitas tentativas. Aguarde alguns instantes e tente de novo.",
+      AUTH_REQUIRED: "Sua sessão expirou. Entre novamente.",
+      CNPJ_IN_USE: "Este CNPJ já está cadastrado. Fale com a Ecolchain.",
+      CNPJ_INVALID: "CNPJ inválido. Confira os dígitos e tente novamente.",
+      PROFILE_TYPE_INVALID: "Tipo de perfil inválido. Recarregue a página.",
+      COMPANY_LOCKED: "O cadastro não pode ser alterado no estado atual.",
+      ATTRIBUTE_VALUE_INVALID: "Valor inválido para o campo.",
+      ATTRIBUTE_NOT_IN_FLOW: "Campo fora do fluxo desta empresa.",
+      SUBMIT_INCOMPLETE: "Ainda há itens obrigatórios pendentes.",
+      DOCUMENT_INVALID: "Arquivo inválido. Verifique o formato e o tamanho.",
+      DOCUMENT_NOT_CONFIRMED: "O envio do documento não foi confirmado.",
+      DOCUMENT_UPLOAD_FAILED: "Falha no envio do arquivo. Tente novamente.",
+      REFRESH_REUSED: "Sua sessão foi encerrada por segurança. Entre novamente.",
+    } as Record<string, string>,
+  },
+};
+
+export type Copy = typeof copy;

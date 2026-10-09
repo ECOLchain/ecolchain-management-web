@@ -24,6 +24,17 @@ export class UnauthorizedError extends Error {
   }
 }
 
+let apiLang = "pt-BR";
+
+/**
+ * Idioma enviado em Accept-Language — a API negocia pt-BR/en e devolve
+ * rótulos/details no idioma pedido. O I18nProvider chama isto com o locale
+ * da rota (`/pt-br` ou `/en`); default pt-BR.
+ */
+export function setApiLanguage(lang: string): void {
+  apiLang = lang;
+}
+
 interface FetchOptions {
   method?: string;
   body?: unknown;
@@ -36,7 +47,10 @@ async function rawFetch<T>(
   path: string,
   opts: FetchOptions,
 ): Promise<{ status: number; body: Envelope<T> }> {
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    "Accept-Language": apiLang,
+  };
   if (opts.body !== undefined) headers["Content-Type"] = "application/json";
   if (opts.auth !== "public") {
     const token = getSession()?.accessToken;

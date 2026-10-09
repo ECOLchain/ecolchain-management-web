@@ -11,11 +11,18 @@ export function cn(...args: Parameters<typeof clsx>) {
   return twMerge(clsx(...args));
 }
 
-export function Spinner({ className }: { className?: string }) {
+export function Spinner({
+  className,
+  label,
+}: {
+  className?: string;
+  label?: string;
+}) {
   return (
     <LoaderCircle
       className={cn("h-5 w-5 animate-spin text-verde-musgo", className)}
-      aria-label="Carregando"
+      aria-label={label}
+      aria-hidden={label ? undefined : true}
     />
   );
 }
@@ -30,9 +37,15 @@ export function FullPageLoader({ label }: { label?: string }) {
   );
 }
 
-export function BrandMark({ compact = false }: { compact?: boolean }) {
+export function BrandMark({
+  compact = false,
+  home = "/",
+}: {
+  compact?: boolean;
+  home?: string;
+}) {
   return (
-    <Link href="/" className="flex items-center gap-2.5" aria-label="ECOLchain">
+    <Link href={home} className="flex items-center gap-2.5" aria-label="ECOLchain">
       <Image src="/favicon.svg" alt="" width={30} height={30} priority />
       {!compact && (
         <Image

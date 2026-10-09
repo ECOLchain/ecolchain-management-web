@@ -1,3 +1,4 @@
+import { isLocale, type Locale } from "@/i18n";
 import type { NextStep } from "./types";
 
 /**
@@ -14,12 +15,14 @@ export const STEP_ROUTE: Record<NextStep, string> = {
   SUSPENDED: "/suspendida",
 };
 
-export function routeForStep(step: NextStep): string {
-  return STEP_ROUTE[step] ?? "/";
+export function routeForStep(step: NextStep, locale: Locale): string {
+  return `/${locale}${STEP_ROUTE[step] ?? "/"}`;
 }
 
-/** Rota para o passo que a tela atual serve; usada pelo guard das páginas. */
+/** Rota para o passo que a tela atual serve; aceita pathname com ou sem locale. */
 export function stepForRoute(pathname: string): NextStep | null {
-  const entry = Object.entries(STEP_ROUTE).find(([, route]) => route === pathname);
+  const [, maybeLocale, ...rest] = pathname.split("/");
+  const bare = isLocale(maybeLocale) ? `/${rest.join("/")}` : pathname;
+  const entry = Object.entries(STEP_ROUTE).find(([, route]) => route === bare);
   return (entry?.[0] as NextStep | undefined) ?? null;
 }

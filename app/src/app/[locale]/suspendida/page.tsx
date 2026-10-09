@@ -1,21 +1,25 @@
 import { CircleSlash } from "lucide-react";
 import { RequireStep } from "@/components/gate";
 import { StatusScreen } from "@/components/status-screen";
+import { DEFAULT_LOCALE, getCopy, isLocale } from "@/i18n";
 
-export default function SuspendidaPage() {
+export default async function SuspendidaPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const c = getCopy(isLocale(locale) ? locale : DEFAULT_LOCALE);
   return (
     <RequireStep allow={["SUSPENDED"]}>
       <StatusScreen
         icon={<CircleSlash className="h-7 w-7" aria-hidden />}
         tone="error"
-        title="Conta suspensa"
+        title={c.status.suspendidaTitle}
       >
-        <p>
-          A participação desta empresa na rede ECOLchain está suspensa.
-        </p>
+        <p>{c.status.suspendidaBody}</p>
         <p className="mt-3">
-          Para entender o motivo ou pedir a reativação, fale com a equipe
-          ECOLchain pelo e-mail{" "}
+          {c.status.suspendidaBody2}{" "}
           <a
             className="font-semibold text-verde-musgo underline"
             href="mailto:ecolchain@gmail.com"

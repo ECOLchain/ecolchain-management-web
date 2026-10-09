@@ -3,11 +3,15 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useSession } from "./session-context";
+import { useCopy, useLocale } from "@/i18n/provider";
+import { localPath } from "@/i18n";
 import { AppHeader, Button, Card, PageShell } from "./ui";
 
 export function LogoutButton() {
   const { logout } = useSession();
   const router = useRouter();
+  const locale = useLocale();
+  const copy = useCopy();
   const [busy, setBusy] = useState(false);
   return (
     <Button
@@ -18,10 +22,10 @@ export function LogoutButton() {
       onClick={async () => {
         setBusy(true);
         await logout();
-        router.replace("/login");
+        router.replace(localPath("/login", locale));
       }}
     >
-      Sair
+      {copy.common.logout}
     </Button>
   );
 }
