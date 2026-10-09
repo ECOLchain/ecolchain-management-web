@@ -1,16 +1,16 @@
+import { Suspense } from "react";
 import { Leaf } from "lucide-react";
 import { LoginForm } from "@/components/login-form";
 import { BrandMark } from "@/components/ui";
 import { DEFAULT_LOCALE, getCopy, isLocale, localPath } from "@/i18n";
+import { LoginFormWithMotivo } from "./login-form-with-motivo";
 
 export default async function LoginPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ motivo?: string }>;
 }) {
-  const [{ locale }, { motivo }] = await Promise.all([params, searchParams]);
+  const { locale } = await params;
   const l = isLocale(locale) ? locale : DEFAULT_LOCALE;
   const c = getCopy(l);
   return (
@@ -30,7 +30,9 @@ export default async function LoginPage({
         <h1 className="mb-8 text-3xl font-bold tracking-tight text-verde-floresta">
           {c.login.welcome}
         </h1>
-        <LoginForm sessionExpired={motivo === "sessao-expirada"} />
+        <Suspense fallback={<LoginForm />}>
+          <LoginFormWithMotivo />
+        </Suspense>
         <p className="mt-6 text-center text-xs text-verde-musgo/80">
           {c.login.tagline}
         </p>

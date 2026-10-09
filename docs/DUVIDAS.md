@@ -86,3 +86,50 @@ Atributos DATA podem vir com `regras: null` (sem restrições) — o tipo no fro
 
 (Após o fix `488841f` do backend, `UPLOADED`/download voltaram a ser renderizáveis —
 a recarga do onboarding que falhava com 500 já foi coberta no E2E pós-fix.)
+
+## Deploy/esteira (export estático, ambientes e API)
+
+### 4. `output: 'export'` — recursos de servidor que ficaram restritos ao dev
+
+- **Rewrites do `next.config.ts`** não existem em runtime estático (não há
+  servidor Next). Decisão: config bifásica — `next dev` mantém os rewrites
+  (proxy → `API_INTERNAL_URL`/`localhost:8080`); o build exporta `out/`.
+  Em produção as chamadas vão para `NEXT_PUBLIC_API_URL` (ver AMBIENTES.md).
+- **`src/proxy.ts`** (redirect de path sem locale → `/pt-br/...`) só roda em
+  dev. No estático, um path sem locale cai no `index.html` raiz (redirect →
+  `/pt-br`) — perde só a preservação do subpath (`/login` → `/pt-br` em vez de
+  `/pt-br/login`). Aceito: quem navega sempre usa URLs já localizadas.
+- **`searchParams` em server component** (`/login?motivo=...`) quebrava o
+  prerender. Decisão: leitura movida para `useSearchParams()` em
+  `login-form-with-motivo.tsx` dentro de `<Suspense>` — mesmo comportamento.
+- **`next/image`** exigiu `images.unoptimized` (sem otimizador server-side;
+  as imagens são só SVGs locais, sem perda real).
+
+### 5. Como a SPA fala com a API em produção (cross-origin same-site)
+
+- O pedido pedia `NEXT_PUBLIC_API_URL` por ambiente. Adotado:
+  dev `https://api-dev.ecolchain.com`, prod `https://api.ecolchain.com`
+  (inline no build; `""` local = same-origin). Os hostnames são o
+  **combinado** para o futuro deploy da `ecolchain-management-api`.
+- O cookie `ecolchain_refresh` é `SameSite=Strict`: `manage(-dev)` → `api(-dev)`
+  continua **same-site** (eTLD+1 `ecolchain.com`), então o refresh funciona —
+  **desde que a API configure CORS credenciado** (`Allow-Origin` =
+  `https://manage-dev.ecolchain.com`/`https://manage.ecolchain.com` +
+  `Allow-Credentials`) e os headers `Authorization`, `Content-Type`,
+  `Accept-Language`, `Accept` no preflight. Pendente do deploy do backend —
+  registrado para alinhar lá.
+- Alternativa avaliada e descartada por ora: proxy `/auth`,`/me` no worker
+  Cloudflare (manteria same-origin e zeraria CORS). Se o CORS virar problema,
+  é o plano B documentado — o módulo `web-hosting` aceitaria um `api_origin`.
+
+### 6. Worker compartilhado (`html_routes`)
+
+- O `out/` do Next emite `<rota>.html` (não `<rota>/index.html` nem bundle
+  único estilo Vite). O fallback antigo do worker (tudo sem extensão →
+  `/index.html`) servia o index raiz para `/pt-br/login` — e como o index raiz
+  é a página-redirect `/` → `/pt-br`, gerava **loop**.
+- Decisão: módulo `web-hosting` ganhou `html_routes` (binding `HTML_ROUTES`
+  no worker): rota sem extensão tenta `<rota>.html` → `<rota>/index.html` →
+  `/index.html`. Ativado só nos roots `management-web/*` — `core-web` fica
+  idêntico em comportamento. Payloads `.txt` do App Router (client nav) e
+  assets `/_next/*` têm extensão e passam direto, igual antes.

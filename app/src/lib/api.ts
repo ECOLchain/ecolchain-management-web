@@ -1,3 +1,4 @@
+import { API_BASE } from "./api-base";
 import { ApiError, NetworkError } from "./errors";
 import {
   getSession,
@@ -7,7 +8,8 @@ import {
 import type { Envelope } from "./types";
 
 /**
- * Wrapper de fetch para a API (mesma origem via rewrites do Next).
+ * Wrapper de fetch para a API (mesma origem via rewrites do Next, ou a
+ * origem de `NEXT_PUBLIC_API_URL` quando a esteira a define no build).
  *
  * - Toda resposta é um envelope `{data, links, erros}`; erro vira `ApiError`.
  * - Chamadas autenticadas mandam `Authorization: Bearer <token em memória>`.
@@ -58,7 +60,7 @@ async function rawFetch<T>(
   }
   let res: Response;
   try {
-    res = await fetch(path, {
+    res = await fetch(`${API_BASE}${path}`, {
       method: opts.method ?? "GET",
       credentials: "include",
       headers,
