@@ -1,0 +1,154 @@
+import type { Copy } from "./pt-br";
+
+/** English copy — mirrors pt-br.ts key for key. Never hardcode strings. */
+export const copy: Copy = {
+  meta: {
+    title: "ECOLchain · Company portal",
+    description:
+      "Company registration and onboarding on the ECOLchain network — blockchain-powered waste traceability.",
+  },
+  common: {
+    loading: "Loading",
+    loadingEllipsis: "Loading...",
+    loadingSession: "Loading your session...",
+    redirecting: "Redirecting...",
+    logout: "Sign out",
+    previous: "Previous",
+    save: "Save",
+    saveContinue: "Save and continue",
+    submitReview: "Submit for review",
+    reviewerNote: "Reviewer note",
+    required: "Required field.",
+    invalidFormat: "Invalid format.",
+    maxChars: (n: number) => `Maximum ${n} characters.`,
+  },
+  login: {
+    portalTag: "Company portal",
+    welcome: "Welcome to the ECOLchain network",
+    tagline: "Traceability and audit of solid waste via blockchain.",
+    cardTitle: "Sign in to your account",
+    cardSub: "We send a 6-digit code to your email. No password.",
+    emailLabel: "Work email",
+    emailPlaceholder: "you@company.com",
+    sendCode: "Send code",
+    codeTitle: "Check your email",
+    codeSentPre: "We sent a code to",
+    codeSentPost: ". It is valid for 10 minutes.",
+    codeLabel: "Verification code",
+    signIn: "Sign in",
+    useOtherEmail: "Use a different email",
+    resendCode: "Resend code",
+    resendIn: (s: number) => `Resend in ${s}s`,
+    invalidEmail: "Enter a valid email address.",
+    invalidCode: "The code has 6 numeric digits.",
+    sessionExpired: "Your session has expired. Please sign in again.",
+  },
+  empresa: {
+    title: "Company registration",
+    sub: "Tell us about the company joining the network.",
+    sectionTitle: "Company details",
+    sectionSub: "This information identifies your company on the ECOLchain network.",
+    cnpjLabel: "CNPJ",
+    cnpjPlaceholder: "00.000.000/0000-00",
+    cnpjHint: "We accept the new alphanumeric format from Receita.",
+    razaoLabel: "Legal business name",
+    razaoPlaceholder: "Example Company Ltd.",
+    nomeLabel: "Your full name",
+    nomePlaceholder: "Name of the legal representative",
+    tiposLabel: "Profile types",
+    tiposHint:
+      "Select all that apply — onboarding combines the requirements of each one.",
+    loadingTipos: "Loading types...",
+    tiposLoadError: "Could not load the profile types.",
+    declaracaoPre:
+      "I declare that I am the owner or legal representative of this company and I accept the",
+    declaracaoPost: ".",
+    termos: (versao: string) => `Terms of Use (${versao})`,
+    errCnpj: "Invalid CNPJ. Check the digits.",
+    errRazao: "Enter the legal business name.",
+    errNome: "Enter your full name.",
+    errTipos: "Select at least one profile type.",
+    errDeclaracao:
+      "You must declare that you are the owner or legal representative.",
+  },
+  onboarding: {
+    title: "Onboarding",
+    sub: "Complete your profile requirements to join the network.",
+    loadingOnboarding: "Loading your onboarding...",
+    progress: (done: number, total: number) =>
+      `${done} of ${total} required items`,
+    stepsAria: "Onboarding steps",
+    changesTitle: "The reviewer requested changes",
+    changesBody:
+      "Fix the items marked as rejected and resubmit your registration.",
+    updateTitle: "New requirements",
+    updateBody:
+      "The network added requirements to your profile. Fill in the new items and resubmit.",
+    submitNote:
+      "Review your answers. When you submit, your registration enters the ECOLchain manual review queue.",
+    pendingItem: "Required item pending.",
+    submitMissing:
+      "Some required items are still pending — they are marked below.",
+    rejectedNote: "Rejected during review.",
+  },
+  docs: {
+    pending: "Pending upload",
+    uploaded: "Uploaded",
+    rejected: "Rejected during review",
+    accepted: "Accepted",
+    send: "Upload file",
+    replace: "Replace",
+    download: "Download",
+    preparing: "Preparing upload...",
+    sending: "Uploading file...",
+    confirming: "Confirming...",
+    badFormat: (ext: string) =>
+      `Format not accepted. Allowed: ${ext}.`,
+    tooBig: (limit: string) => `File larger than the ${limit} limit.`,
+    empty: "The file is empty.",
+    formats: (ext: string, limit: string) =>
+      `Formats: ${ext} · up to ${limit}`,
+  },
+  status: {
+    revisaoTitle: "Registration under review",
+    revisaoBody:
+      "We received all your data and documents. Our team is reviewing your registration and you will be notified by email when the review is complete.",
+    revisaoBody2:
+      "There is nothing else to do here — you can sign out and come back anytime to check the status.",
+    rejeitadaTitle: "Registration not approved",
+    rejeitadaBody:
+      "After review, this company's registration was not approved to join the ECOLchain network at this time.",
+    rejeitadaBody2:
+      "If you believe this was a mistake, contact the ECOLchain team by email",
+    suspendidaTitle: "Account suspended",
+    suspendidaBody:
+      "This company's participation in the ECOLchain network is suspended.",
+    suspendidaBody2:
+      "To understand why or request reactivation, contact the ECOLchain team by email",
+    painelTitle: "Welcome to ECOLchain",
+    painelBody:
+      "Your company has been approved and is now part of the network. This is the home screen of the logged-in area — product features will land here in future releases.",
+    razaoSocial: "Legal business name",
+    cnpj: "CNPJ",
+    perfis: "Profiles",
+  },
+  errors: {
+    generic: "Something went wrong. Please try again in a moment.",
+    friendly: {
+      OTP_INVALID: "Invalid or expired code. Check your email and try again.",
+      TOO_MANY_REQUESTS: "Too many attempts. Wait a few moments and try again.",
+      AUTH_REQUIRED: "Your session has expired. Please sign in again.",
+      CNPJ_IN_USE: "This CNPJ is already registered. Contact ECOLchain.",
+      CNPJ_INVALID: "Invalid CNPJ. Check the digits and try again.",
+      PROFILE_TYPE_INVALID: "Invalid profile type. Reload the page.",
+      COMPANY_LOCKED: "The registration cannot be changed in its current state.",
+      ATTRIBUTE_VALUE_INVALID: "Invalid value for this field.",
+      ATTRIBUTE_NOT_IN_FLOW: "Field outside this company's flow.",
+      SUBMIT_INCOMPLETE: "Some required items are still pending.",
+      DOCUMENT_INVALID: "Invalid file. Check the format and size.",
+      DOCUMENT_NOT_CONFIRMED: "The document upload was not confirmed.",
+      DOCUMENT_UPLOAD_FAILED: "File upload failed. Try again.",
+      REFRESH_REUSED: "Your session was ended for security. Please sign in again.",
+    } as Record<string, string>,
+  },
+};

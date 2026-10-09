@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --color-verde-floresta: #0e4330;
+  --color-verde-tinta: #0a3a28;
+  --color-verde-musgo: #007b63;
+  --color-verde-vivo: #00e8c5;
+  --color-verde-banda: #e4f2ea;
+  --color-creme: #fdfbf6;
+  --color-creme-papel: #f2eedd;
+  --color-erro-terra: #611a06;
+  --color-erro-fundo: #f8e5de;
+  --color-ok-fundo: #def0e4;
+  --color-dourado: #c98f1b;
+  --color-grafite: #231f20;
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* Marca ECOLchain: fonte única self-hosted (mesma da landing). */
+@font-face {
+  font-family: "Inter";
+  src: url("/fonts/inter-var-latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --verde-floresta: #0e4330;
+  --verde-tinta: #0a3a28;
+  --verde-musgo: #007b63;
+  --verde-vivo: #00e8c5;
+  --verde-banda: #e4f2ea;
+  --creme: #fdfbf6;
+  --creme-papel: #f2eedd;
+  --erro-terra: #611a06;
+  --grafite: #231f20;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--creme);
+  color: var(--verde-floresta);
+  font-family: var(--font-sans);
+  line-height: 1.6;
+}
+
+a, button { touch-action: manipulation; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--verde-tinta);
+  outline-offset: 2px;
+}
