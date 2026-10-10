@@ -112,8 +112,12 @@ function res2xx(status: number): boolean {
 // ---------- Endpoints ----------
 
 import type {
+  AdminAccount,
+  AdminAttribute,
   AdminCompany,
   AdminCompanyList,
+  AdminProfileType,
+  AuditLogPage,
   CompanyStatus,
   CompanyUpsertBody,
   DownloadUrlData,
@@ -212,6 +216,50 @@ export const api = {
     apiFetch<DownloadUrlData>(
       `/admin/companies/${encodeURIComponent(id)}/documents/${encodeURIComponent(code)}/download-url`,
     ),
+
+  listProfileTypesAdmin: async () => {
+    const data = await apiFetch<{ tipos: AdminProfileType[] }>(
+      "/admin/profile-types",
+    );
+    return data?.tipos ?? [];
+  },
+
+  patchProfileType: (
+    code: string,
+    patch: Partial<
+      Pick<
+        AdminProfileType,
+        "ativo" | "nomePt" | "nomeEn" | "descricaoPt" | "descricaoEn" | "ordem"
+      >
+    >,
+  ) =>
+    apiFetch<AdminProfileType>(
+      `/admin/profile-types/${encodeURIComponent(code)}`,
+      { method: "PATCH", body: patch },
+    ),
+
+  listAttributesAdmin: async () => {
+    const data = await apiFetch<{ atributos: AdminAttribute[] }>(
+      "/admin/attributes",
+    );
+    return data?.atributos ?? [];
+  },
+
+  listAuditLog: (pagina = 0) =>
+    apiFetch<AuditLogPage>(`/admin/audit-log?pagina=${pagina}`),
+
+  listAdminAccounts: async () => {
+    const data = await apiFetch<{ admins: AdminAccount[] }>(
+      "/admin/accounts",
+    );
+    return data?.admins ?? [];
+  },
+
+  createAdminAccount: (body: {
+    email: string;
+    nomeCompleto: string;
+    telefone: string;
+  }) => apiFetch<AdminAccount>("/admin/accounts", { method: "POST", body }),
 };
 
 /**
