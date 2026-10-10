@@ -23,6 +23,7 @@ const devConfig: NextConfig = {
       { source: "/auth/:path*", destination: `${apiUrl}/auth/:path*` },
       { source: "/public/:path*", destination: `${apiUrl}/public/:path*` },
       { source: "/me/:path*", destination: `${apiUrl}/me/:path*` },
+      { source: "/admin/:path*", destination: `${apiUrl}/admin/:path*` },
       { source: "/.well-known/:path*", destination: `${apiUrl}/.well-known/:path*` },
       // Ferramenta de dev do backend (mailer mock): lê o OTP enviado no E2E local.
       { source: "/dev-mailbox", destination: `${apiUrl}/dev-mailbox` },
