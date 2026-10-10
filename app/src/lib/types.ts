@@ -202,3 +202,65 @@ export interface AdminCompany {
   criadoEm: string;
   submetidoEm: string | null;
 }
+
+export interface AdminAttribute {
+  codigo: string;
+  tipo: AttributeKind;
+  rotuloPt: string;
+  rotuloEn: string;
+  ajudaPt: string | null;
+  ajudaEn: string | null;
+  regras: AttributeRules | null;
+  ativo: boolean;
+}
+
+export interface AdminFlowAttribute {
+  codigo: string;
+  obrigatorio: boolean;
+  definicao: AdminAttribute;
+}
+
+export interface AdminFlowStep {
+  codigo: string;
+  tituloPt: string;
+  tituloEn: string;
+  atributos: AdminFlowAttribute[];
+}
+
+export interface AdminProfileType {
+  codigo: string;
+  nomePt: string;
+  nomeEn: string;
+  descricaoPt: string | null;
+  descricaoEn: string | null;
+  ativo: boolean;
+  ordem: number;
+  passos: AdminFlowStep[];
+}
+
+export interface AdminAccount {
+  id: string;
+  email: string;
+  nomeCompleto: string | null;
+  telefone: string | null;
+  papel: AccountRole;
+  criadoEm: string;
+}
+
+export interface AuditLogItem {
+  id: string;
+  ator: string;
+  acao: string;
+  entidade: string;
+  entidadeId: string;
+  antes: string | null;
+  depois: string | null;
+  criadoEm: string;
+}
+
+export interface AuditLogPage {
+  itens: AuditLogItem[];
+  pagina: number;
+  tamanho: number;
+  total: number;
+}

@@ -11,13 +11,11 @@ import type {
   ReviewDecision,
 } from "@/lib/types";
 import { useCopy, useLocale } from "@/i18n/provider";
-import { AuthedHeader } from "./status-screen";
 import {
   Alert,
   Button,
   Card,
   FullPageLoader,
-  PageShell,
   TextareaField,
 } from "./ui";
 
@@ -33,7 +31,7 @@ const STATUS_TONE: Record<CompanyStatus, string> = {
   SUSPENDED: "bg-erro-fundo text-erro-terra",
 };
 
-function StatusBadge({ status, label }: { status: CompanyStatus; label: string }) {
+export function StatusBadge({ status, label }: { status: CompanyStatus; label: string }) {
   return (
     <span
       className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_TONE[status]}`}
@@ -43,13 +41,13 @@ function StatusBadge({ status, label }: { status: CompanyStatus; label: string }
   );
 }
 
-function fmtDate(iso: string | null): string {
+export function fmtDate(iso: string | null): string {
   if (!iso) return "—";
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? iso : d.toLocaleString();
 }
 
-export function AdminConsole() {
+export function AdminCompanies() {
   const c = useCopy();
   const locale = useLocale();
   const a = c.admin;
@@ -140,9 +138,7 @@ export function AdminConsole() {
     locale === "en" ? v.rotuloEn : v.rotuloPt;
 
   return (
-    <>
-      <AuthedHeader />
-      <PageShell title={a.title} subtitle={a.sub} wide>
+    <div>
         <div className="mb-4 flex gap-2">
           {(["UNDER_REVIEW", "ALL"] as Tab[]).map((t) => (
             <button
@@ -329,7 +325,6 @@ export function AdminConsole() {
             ) : null}
           </Card>
         ) : null}
-      </PageShell>
-    </>
+    </div>
   );
 }
