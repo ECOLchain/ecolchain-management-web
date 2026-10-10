@@ -117,15 +117,19 @@ import type {
   AdminCompany,
   AdminCompanyList,
   AdminProfileType,
+  AttributeDefinitionBody,
   AuditLogPage,
   CompanyStatus,
   CompanyUpsertBody,
   DownloadUrlData,
   EmpresaResumo,
+  FlowStepInput,
   MeData,
   OnboardingData,
   ProfileTypeSummary,
+  ProfileTypeUpsertBody,
   ReviewDecision,
+  ReviewItem,
   SessionData,
   UploadUrlData,
 } from "./types";
@@ -195,17 +199,20 @@ export const api = {
 
   // ---------- Admin (PLATFORM_ADMIN) ----------
 
-  listCompanies: (status?: CompanyStatus) =>
-    apiFetch<AdminCompanyList>(
-      `/admin/companies${status ? `?status=${encodeURIComponent(status)}` : ""}`,
-    ),
+  listCompanies: (status?: CompanyStatus, pagina = 0, tamanho = 20) => {
+    const q = new URLSearchParams();
+    if (status) q.set("status", status);
+    q.set("pagina", String(pagina));
+    q.set("tamanho", String(tamanho));
+    return apiFetch<AdminCompanyList>(`/admin/companies?${q}`);
+  },
 
   getCompany: (id: string) =>
     apiFetch<AdminCompany>(`/admin/companies/${encodeURIComponent(id)}`),
 
   reviewCompany: (
     id: string,
-    body: { decisao: ReviewDecision; nota?: string },
+    body: { decisao: ReviewDecision; nota?: string; itens?: ReviewItem[] },
   ) =>
     apiFetch<AdminCompany>(
       `/admin/companies/${encodeURIComponent(id)}/review`,
@@ -238,6 +245,24 @@ export const api = {
       { method: "PATCH", body: patch },
     ),
 
+  createProfileType: (body: ProfileTypeUpsertBody) =>
+    apiFetch<AdminProfileType>("/admin/profile-types", {
+      method: "POST",
+      body,
+    }),
+
+  replaceProfileTypeFlow: (code: string, passos: FlowStepInput[]) =>
+    apiFetch<AdminProfileType>(
+      `/admin/profile-types/${encodeURIComponent(code)}/flow`,
+      { method: "PUT", body: { passos } },
+    ),
+
+  upsertAttribute: (body: AttributeDefinitionBody) =>
+    apiFetch<AdminAttribute>(
+      `/admin/attributes/${encodeURIComponent(body.codigo)}`,
+      { method: "PUT", body },
+    ),
+
   listAttributesAdmin: async () => {
     const data = await apiFetch<{ atributos: AdminAttribute[] }>(
       "/admin/attributes",
@@ -245,8 +270,8 @@ export const api = {
     return data?.atributos ?? [];
   },
 
-  listAuditLog: (pagina = 0) =>
-    apiFetch<AuditLogPage>(`/admin/audit-log?pagina=${pagina}`),
+  listAuditLog: (pagina = 0, tamanho = 50) =>
+    apiFetch<AuditLogPage>(`/admin/audit-log?pagina=${pagina}&tamanho=${tamanho}`),
 
   listAdminAccounts: async () => {
     const data = await apiFetch<{ admins: AdminAccount[] }>(

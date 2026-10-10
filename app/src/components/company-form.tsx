@@ -12,6 +12,9 @@ import type { ProfileTypeSummary } from "@/lib/types";
 
 const TERMS_VERSION = "v1-placeholder"; // app.auth.terms-version do backend
 
+// Mesma regra do backend (WalletValidator): Solana base58 32-44 ou EVM 0x+40 hex.
+const WALLET_RE = /^([1-9A-HJ-NP-Za-km-z]{32,44}|0x[0-9a-fA-F]{40})$/;
+
 export function CompanyForm() {
   const { me, reloadMe, expire } = useSession();
   const c = useCopy();
@@ -23,6 +26,7 @@ export function CompanyForm() {
     () => me?.empresa?.razaoSocial ?? "",
   );
   const [nomeCompleto, setNomeCompleto] = useState(me?.conta.nomeCompleto ?? "");
+  const [carteira, setCarteira] = useState(() => me?.empresa?.carteira ?? "");
   const [selecionados, setSelecionados] = useState<string[]>(
     () => me?.empresa?.tiposPerfil ?? [],
   );
@@ -62,6 +66,7 @@ export function CompanyForm() {
     if (!isValidCnpj(cnpj)) erros.cnpj = c.empresa.errCnpj;
     if (!razaoSocial.trim()) erros.razaoSocial = c.empresa.errRazao;
     if (!nomeCompleto.trim()) erros.nomeCompleto = c.empresa.errNome;
+    if (!WALLET_RE.test(carteira.trim())) erros.carteira = c.empresa.errCarteira;
     if (selecionados.length === 0) erros.tiposPerfil = c.empresa.errTipos;
     if (!declaracao) erros.declaracao = c.empresa.errDeclaracao;
     setErrosCampo(erros);
@@ -78,6 +83,7 @@ export function CompanyForm() {
         cnpj: normalizeCnpj(cnpj),
         razaoSocial: razaoSocial.trim(),
         nomeCompleto: nomeCompleto.trim(),
+        carteira: carteira.trim(),
         tiposPerfil: selecionados,
         declaracaoRepresentante: declaracao,
         versaoTermos: TERMS_VERSION,
@@ -146,6 +152,17 @@ export function CompanyForm() {
           value={nomeCompleto}
           onChange={(e) => setNomeCompleto(e.target.value)}
           error={errosCampo.nomeCompleto}
+          required
+        />
+        <Field
+          label={c.empresa.carteiraLabel}
+          name="carteira"
+          inputMode="text"
+          placeholder={c.empresa.carteiraPlaceholder}
+          value={carteira}
+          onChange={(e) => setCarteira(e.target.value)}
+          error={errosCampo.carteira}
+          hint={c.empresa.carteiraHint}
           required
         />
 
