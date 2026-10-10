@@ -112,12 +112,16 @@ function res2xx(status: number): boolean {
 // ---------- Endpoints ----------
 
 import type {
+  AdminCompany,
+  AdminCompanyList,
+  CompanyStatus,
   CompanyUpsertBody,
   DownloadUrlData,
   EmpresaResumo,
   MeData,
   OnboardingData,
   ProfileTypeSummary,
+  ReviewDecision,
   SessionData,
   UploadUrlData,
 } from "./types";
@@ -184,6 +188,30 @@ export const api = {
 
   submitOnboarding: () =>
     apiFetch<{ status: string }>("/me/onboarding/submit", { method: "POST" }),
+
+  // ---------- Admin (PLATFORM_ADMIN) ----------
+
+  listCompanies: (status?: CompanyStatus) =>
+    apiFetch<AdminCompanyList>(
+      `/admin/companies${status ? `?status=${encodeURIComponent(status)}` : ""}`,
+    ),
+
+  getCompany: (id: string) =>
+    apiFetch<AdminCompany>(`/admin/companies/${encodeURIComponent(id)}`),
+
+  reviewCompany: (
+    id: string,
+    body: { decisao: ReviewDecision; nota?: string },
+  ) =>
+    apiFetch<AdminCompany>(
+      `/admin/companies/${encodeURIComponent(id)}/review`,
+      { method: "POST", body },
+    ),
+
+  companyDocumentUrl: (id: string, code: string) =>
+    apiFetch<DownloadUrlData>(
+      `/admin/companies/${encodeURIComponent(id)}/documents/${encodeURIComponent(code)}/download-url`,
+    ),
 };
 
 /**

@@ -143,3 +143,62 @@ export interface CompanyUpsertBody {
   declaracaoRepresentante: boolean;
   versaoTermos: string;
 }
+
+// ---------- Admin (papel PLATFORM_ADMIN) ----------
+
+export type ReviewDecision = "APPROVE" | "REQUEST_CHANGES" | "REJECT" | "SUSPEND";
+
+export interface AdminCompanyListItem {
+  id: string;
+  cnpj: string;
+  razaoSocial: string;
+  status: CompanyStatus;
+  tiposPerfil: string[];
+  criadoEm: string;
+  submetidoEm: string | null;
+}
+
+export interface AdminCompanyList {
+  empresas: AdminCompanyListItem[];
+  pagina: number;
+  tamanho: number;
+  total: number;
+}
+
+export interface AdminCompanyContact {
+  email: string;
+  nomeCompleto: string;
+  versaoTermos: string;
+  termosAceitosEm: string;
+}
+
+export interface AdminCompanyDocument {
+  nomeArquivo: string;
+  contentType: string;
+  tamanhoBytes: number;
+  status: "UPLOADED" | "ACCEPTED" | "REJECTED";
+  confirmadoEm: string | null;
+}
+
+export interface AdminCompanyValue {
+  codigo: string;
+  tipo: AttributeKind;
+  rotuloPt: string;
+  rotuloEn: string;
+  obrigatorio: boolean;
+  valor: string | null;
+  revisao: Revisao | null;
+  documento: AdminCompanyDocument | null;
+}
+
+export interface AdminCompany {
+  id: string;
+  cnpj: string;
+  razaoSocial: string;
+  status: CompanyStatus;
+  tiposPerfil: string[];
+  contato: AdminCompanyContact | null;
+  valores: AdminCompanyValue[];
+  criadoEm: string;
+  submetidoEm: string | null;
+}

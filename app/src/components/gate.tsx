@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useSession } from "./session-context";
 import { useCopy, useLocale } from "@/i18n/provider";
 import { localPath } from "@/i18n";
-import { routeForStep } from "@/lib/steps";
+import { routeForMe, routeForStep } from "@/lib/steps";
 import type { NextStep } from "@/lib/types";
 import { FullPageLoader } from "./ui";
 
@@ -35,16 +35,56 @@ export function RequireStep({
       router.replace(localPath("/login", locale));
       return;
     }
-    if (state === "authed" && me && !allow.includes(me.proximoPasso)) {
-      const destino = routeForStep(me.proximoPasso, locale);
-      if (destino !== pathname) router.replace(destino);
+    if (state === "authed" && me) {
+      // Admin nunca entra no fluxo de empresa — vai para o console.
+      if (me.conta.papel === "PLATFORM_ADMIN") {
+        const destino = `/${locale}/admin`;
+        if (destino !== pathname) router.replace(destino);
+        return;
+      }
+      if (!allow.includes(me.proximoPasso)) {
+        const destino = routeForStep(me.proximoPasso, locale);
+        if (destino !== pathname) router.replace(destino);
+      }
     }
   }, [state, me, allow, router, pathname, locale]);
 
   if (state !== "authed" || !me) {
     return <FullPageLoader label={c.common.loadingSession} />;
   }
-  if (!allow.includes(me.proximoPasso)) {
+  if (me.conta.papel === "PLATFORM_ADMIN" || !allow.includes(me.proximoPasso)) {
+    return <FullPageLoader label={c.common.redirecting} />;
+  }
+  return <>{children}</>;
+}
+
+/** Guarda do console de administração: exige papel PLATFORM_ADMIN. */
+export function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { state, me } = useSession();
+  const router = useRouter();
+  const pathname = usePathname();
+  const locale = useLocale();
+  const c = useCopy();
+
+  useEffect(() => {
+    if (state === "expired") {
+      router.replace(`${localPath("/login", locale)}?motivo=sessao-expirada`);
+      return;
+    }
+    if (state === "anon") {
+      router.replace(localPath("/login", locale));
+      return;
+    }
+    if (state === "authed" && me && me.conta.papel !== "PLATFORM_ADMIN") {
+      const destino = routeForStep(me.proximoPasso, locale);
+      if (destino !== pathname) router.replace(destino);
+    }
+  }, [state, me, router, pathname, locale]);
+
+  if (state !== "authed" || !me) {
+    return <FullPageLoader label={c.common.loadingSession} />;
+  }
+  if (me.conta.papel !== "PLATFORM_ADMIN") {
     return <FullPageLoader label={c.common.redirecting} />;
   }
   return <>{children}</>;
@@ -63,7 +103,7 @@ export function RootGate() {
     } else if (state === "anon") {
       router.replace(localPath("/login", locale));
     } else if (state === "authed" && me) {
-      router.replace(routeForStep(me.proximoPasso, locale));
+      router.replace(routeForMe(me, locale));
     }
   }, [state, me, router, locale]);
 

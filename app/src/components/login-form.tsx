@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { MailCheck } from "lucide-react";
 import { api } from "@/lib/api";
 import { friendlyMessage } from "@/lib/errors";
-import { routeForStep } from "@/lib/steps";
+import { routeForMe } from "@/lib/steps";
 import { useSession } from "./session-context";
 import { useCopy, useLocale } from "@/i18n/provider";
 import { Alert, Button, Card, Field } from "./ui";
@@ -30,7 +30,7 @@ export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean
   // Já autenticado (ex.: voltou ao /login logado) → segue o fluxo.
   useEffect(() => {
     if (state === "authed" && me)
-      router.replace(routeForStep(me.proximoPasso, locale));
+      router.replace(routeForMe(me, locale));
   }, [state, me, router, locale]);
 
   useEffect(() => {
@@ -88,7 +88,7 @@ export function LoginForm({ sessionExpired = false }: { sessionExpired?: boolean
       if (!session) throw new Error("empty");
       // Entrada direta: o proximoPasso do /me decide a rota — sem tela extra.
       const m = await login(session);
-      if (m) router.replace(routeForStep(m.proximoPasso, locale));
+      if (m) router.replace(routeForMe(m, locale));
     } catch (err) {
       setErro(friendlyMessage(err, c.errors));
     } finally {

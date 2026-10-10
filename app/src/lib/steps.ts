@@ -19,6 +19,18 @@ export function routeForStep(step: NextStep, locale: Locale): string {
   return `/${locale}${STEP_ROUTE[step] ?? "/"}`;
 }
 
+/**
+ * Rota inicial pós-login: PLATFORM_ADMIN vai para o console de administração
+ * (/admin) — papel, não proximoPasso: admin nunca entra no fluxo de empresa.
+ */
+export function routeForMe(
+  me: { conta: { papel: string }; proximoPasso: NextStep },
+  locale: Locale,
+): string {
+  if (me.conta.papel === "PLATFORM_ADMIN") return `/${locale}/admin`;
+  return routeForStep(me.proximoPasso, locale);
+}
+
 /** Rota para o passo que a tela atual serve; aceita pathname com ou sem locale. */
 export function stepForRoute(pathname: string): NextStep | null {
   const [, maybeLocale, ...rest] = pathname.split("/");
