@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { routeForStep, stepForRoute, STEP_ROUTE } from "../src/lib/steps";
+import { routeForMe, routeForStep, stepForRoute, STEP_ROUTE } from "../src/lib/steps";
 import type { NextStep } from "../src/lib/types";
 
 const ALL: NextStep[] = [
@@ -47,5 +47,29 @@ describe("roteamento por proximoPasso", () => {
   it("toda rota é única (uma tela por passo)", () => {
     const rotas = Object.values(STEP_ROUTE);
     expect(new Set(rotas).size).toBe(rotas.length);
+  });
+});
+
+describe("routeForMe (roteamento pós-login por papel)", () => {
+  const me = (papel: string, proximoPasso: NextStep) => ({
+    conta: { papel },
+    proximoPasso,
+  });
+
+  it("PLATFORM_ADMIN vai para /admin independente do proximoPasso", () => {
+    for (const step of ALL) {
+      expect(routeForMe(me("PLATFORM_ADMIN", step), "pt-br")).toBe(
+        "/pt-br/admin",
+      );
+      expect(routeForMe(me("PLATFORM_ADMIN", step), "en")).toBe("/en/admin");
+    }
+  });
+
+  it("COMPANY_OWNER segue o proximoPasso normalmente", () => {
+    for (const step of ALL) {
+      expect(routeForMe(me("COMPANY_OWNER", step), "pt-br")).toBe(
+        routeForStep(step, "pt-br"),
+      );
+    }
   });
 });

@@ -59,6 +59,7 @@ export interface EmpresaResumo {
   id: string;
   cnpj: string;
   razaoSocial: string;
+  carteira: string | null;
   status: CompanyStatus;
   tiposPerfil: string[];
 }
@@ -139,7 +140,176 @@ export interface CompanyUpsertBody {
   cnpj: string;
   razaoSocial: string;
   nomeCompleto: string;
+  carteira: string;
   tiposPerfil: string[];
   declaracaoRepresentante: boolean;
   versaoTermos: string;
+}
+
+// ---------- Admin (papel PLATFORM_ADMIN) ----------
+
+export type ReviewDecision = "APPROVE" | "REQUEST_CHANGES" | "REJECT" | "SUSPEND";
+
+export interface AdminCompanyListItem {
+  id: string;
+  cnpj: string;
+  razaoSocial: string;
+  status: CompanyStatus;
+  tiposPerfil: string[];
+  criadoEm: string;
+  submetidoEm: string | null;
+}
+
+export interface AdminCompanyList {
+  empresas: AdminCompanyListItem[];
+  pagina: number;
+  tamanho: number;
+  total: number;
+}
+
+export interface AdminCompanyContact {
+  email: string;
+  nomeCompleto: string;
+  versaoTermos: string;
+  termosAceitosEm: string;
+}
+
+export interface AdminCompanyDocument {
+  nomeArquivo: string;
+  contentType: string;
+  tamanhoBytes: number;
+  status: "UPLOADED" | "ACCEPTED" | "REJECTED";
+  confirmadoEm: string | null;
+}
+
+export interface AdminCompanyValue {
+  codigo: string;
+  tipo: AttributeKind;
+  rotuloPt: string;
+  rotuloEn: string;
+  obrigatorio: boolean;
+  valor: string | null;
+  revisao: Revisao | null;
+  documento: AdminCompanyDocument | null;
+}
+
+export type ItemDecision = "ACCEPT" | "REJECT";
+
+export interface ReviewItem {
+  atributo: string;
+  decisao: ItemDecision;
+  nota?: string;
+}
+
+export interface AdminCompany {
+  id: string;
+  cnpj: string;
+  razaoSocial: string;
+  carteira: string | null;
+  status: CompanyStatus;
+  tiposPerfil: string[];
+  contato: AdminCompanyContact | null;
+  valores: AdminCompanyValue[];
+  criadoEm: string;
+  submetidoEm: string | null;
+}
+
+export interface AdminAttribute {
+  codigo: string;
+  tipo: AttributeKind;
+  rotuloPt: string;
+  rotuloEn: string;
+  ajudaPt: string | null;
+  ajudaEn: string | null;
+  regras: AttributeRules | null;
+  ativo: boolean;
+}
+
+export interface AdminFlowAttribute {
+  codigo: string;
+  obrigatorio: boolean;
+  definicao: AdminAttribute;
+}
+
+export interface FlowAttributeInput {
+  codigo: string;
+  obrigatorio: boolean;
+  definicao?: AttributeDefinitionInput;
+}
+
+export interface FlowStepInput {
+  codigo: string;
+  tituloPt: string;
+  tituloEn: string;
+  atributos: FlowAttributeInput[];
+}
+
+export interface AttributeDefinitionInput {
+  tipo: AttributeKind;
+  rotuloPt: string;
+  rotuloEn: string;
+  ajudaPt?: string | null;
+  ajudaEn?: string | null;
+  regras?: AttributeRules | null;
+}
+
+export interface AttributeDefinitionBody extends AttributeDefinitionInput {
+  codigo: string;
+  ativo?: boolean;
+}
+
+export interface ProfileTypeUpsertBody {
+  codigo: string;
+  nomePt: string;
+  nomeEn: string;
+  descricaoPt?: string | null;
+  descricaoEn?: string | null;
+  ativo?: boolean;
+  ordem?: number;
+  passos?: FlowStepInput[];
+}
+
+export interface AdminFlowStep {
+  codigo: string;
+  tituloPt: string;
+  tituloEn: string;
+  atributos: AdminFlowAttribute[];
+}
+
+export interface AdminProfileType {
+  codigo: string;
+  nomePt: string;
+  nomeEn: string;
+  descricaoPt: string | null;
+  descricaoEn: string | null;
+  ativo: boolean;
+  ordem: number;
+  passos: AdminFlowStep[];
+}
+
+export interface AdminAccount {
+  id: string;
+  email: string;
+  nomeCompleto: string | null;
+  telefone: string | null;
+  papel: AccountRole;
+  criadoEm: string;
+}
+
+export interface AuditLogItem {
+  id: string;
+  ator: string;
+  acao: string;
+  entidade: string;
+  entidadeId: string;
+  antes: string | null;
+  depois: string | null;
+  criadoEm: string;
+}
+
+export interface AuditLogPage {
+  itens: AuditLogItem[];
+  pagina: number;
+  tamanho: number;
+  total: number;
 }

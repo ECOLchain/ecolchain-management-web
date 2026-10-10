@@ -112,12 +112,24 @@ function res2xx(status: number): boolean {
 // ---------- Endpoints ----------
 
 import type {
+  AdminAccount,
+  AdminAttribute,
+  AdminCompany,
+  AdminCompanyList,
+  AdminProfileType,
+  AttributeDefinitionBody,
+  AuditLogPage,
+  CompanyStatus,
   CompanyUpsertBody,
   DownloadUrlData,
   EmpresaResumo,
+  FlowStepInput,
   MeData,
   OnboardingData,
   ProfileTypeSummary,
+  ProfileTypeUpsertBody,
+  ReviewDecision,
+  ReviewItem,
   SessionData,
   UploadUrlData,
 } from "./types";
@@ -184,6 +196,95 @@ export const api = {
 
   submitOnboarding: () =>
     apiFetch<{ status: string }>("/me/onboarding/submit", { method: "POST" }),
+
+  // ---------- Admin (PLATFORM_ADMIN) ----------
+
+  listCompanies: (status?: CompanyStatus, pagina = 0, tamanho = 20) => {
+    const q = new URLSearchParams();
+    if (status) q.set("status", status);
+    q.set("pagina", String(pagina));
+    q.set("tamanho", String(tamanho));
+    return apiFetch<AdminCompanyList>(`/admin/companies?${q}`);
+  },
+
+  getCompany: (id: string) =>
+    apiFetch<AdminCompany>(`/admin/companies/${encodeURIComponent(id)}`),
+
+  reviewCompany: (
+    id: string,
+    body: { decisao: ReviewDecision; nota?: string; itens?: ReviewItem[] },
+  ) =>
+    apiFetch<AdminCompany>(
+      `/admin/companies/${encodeURIComponent(id)}/review`,
+      { method: "POST", body },
+    ),
+
+  companyDocumentUrl: (id: string, code: string) =>
+    apiFetch<DownloadUrlData>(
+      `/admin/companies/${encodeURIComponent(id)}/documents/${encodeURIComponent(code)}/download-url`,
+    ),
+
+  listProfileTypesAdmin: async () => {
+    const data = await apiFetch<{ tipos: AdminProfileType[] }>(
+      "/admin/profile-types",
+    );
+    return data?.tipos ?? [];
+  },
+
+  patchProfileType: (
+    code: string,
+    patch: Partial<
+      Pick<
+        AdminProfileType,
+        "ativo" | "nomePt" | "nomeEn" | "descricaoPt" | "descricaoEn" | "ordem"
+      >
+    >,
+  ) =>
+    apiFetch<AdminProfileType>(
+      `/admin/profile-types/${encodeURIComponent(code)}`,
+      { method: "PATCH", body: patch },
+    ),
+
+  createProfileType: (body: ProfileTypeUpsertBody) =>
+    apiFetch<AdminProfileType>("/admin/profile-types", {
+      method: "POST",
+      body,
+    }),
+
+  replaceProfileTypeFlow: (code: string, passos: FlowStepInput[]) =>
+    apiFetch<AdminProfileType>(
+      `/admin/profile-types/${encodeURIComponent(code)}/flow`,
+      { method: "PUT", body: { passos } },
+    ),
+
+  upsertAttribute: (body: AttributeDefinitionBody) =>
+    apiFetch<AdminAttribute>(
+      `/admin/attributes/${encodeURIComponent(body.codigo)}`,
+      { method: "PUT", body },
+    ),
+
+  listAttributesAdmin: async () => {
+    const data = await apiFetch<{ atributos: AdminAttribute[] }>(
+      "/admin/attributes",
+    );
+    return data?.atributos ?? [];
+  },
+
+  listAuditLog: (pagina = 0, tamanho = 50) =>
+    apiFetch<AuditLogPage>(`/admin/audit-log?pagina=${pagina}&tamanho=${tamanho}`),
+
+  listAdminAccounts: async () => {
+    const data = await apiFetch<{ admins: AdminAccount[] }>(
+      "/admin/accounts",
+    );
+    return data?.admins ?? [];
+  },
+
+  createAdminAccount: (body: {
+    email: string;
+    nomeCompleto: string;
+    telefone: string;
+  }) => apiFetch<AdminAccount>("/admin/accounts", { method: "POST", body }),
 };
 
 /**
